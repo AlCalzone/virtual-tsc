@@ -1,0 +1,19 @@
+{
+  "name": "virtual-tsc",
+  "version": "0.0.1",
+  "description": "Provides means to compile TypeScript code in memory",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlCalzone/virtual-tsc.git"
+  },
+  "author": "AlCalzone",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AlCalzone/virtual-tsc/issues"
+  },
+  "homepage": "https://github.com/AlCalzone/virtual-tsc#readme"
+}
