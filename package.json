@@ -10,7 +10,9 @@
   },
   "license": "MIT",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "node node_modules/typescript/.bin/tsc",
+    "watch": "npm run compile --watch"
   },
   "repository": {
     "type": "git",
@@ -21,9 +23,11 @@
   },
   "homepage": "https://github.com/AlCalzone/virtual-tsc#readme",
   "dependencies": {
+    "debug": "^3.1.0",
     "typescript": "^2.5.3"
   },
   "devDependencies": {
+    "@types/node": "^8.0.34",
     "tslint": "^5.7.0"
   }
 }

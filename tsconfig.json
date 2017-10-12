@@ -8,8 +8,7 @@
         "noImplicitAny": false,
         "outDir": "build/",
         "removeComments": false,
-        "sourceMap": false,
-        "inlineSourceMap": true,
+        "sourceMap": true,
         "sourceRoot": "src/",
         "target": "es2015"
     }
