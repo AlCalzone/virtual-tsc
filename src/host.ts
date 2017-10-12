@@ -1,5 +1,5 @@
 import * as debugPackage from "debug";
-import * as path from "path";
+import * as nodePath from "path";
 import * as ts from "typescript";
 import { VirtualFileSystem } from "./virtual-fs";
 
@@ -8,12 +8,19 @@ const debug = debugPackage("virtual-tsc");
 // see https://github.com/Microsoft/TypeScript/issues/13629 for an implementation
 // also: https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#customizing-module-resolution
 
+const NODEJS_MODULES = [
+	"fs", "path", // TODO
+];
+
 /**
  * Implementation of CompilerHost that works with in-memory-only source files
  */
 export class InMemoryHost implements ts.CompilerHost {
 
-	constructor(private fs: VirtualFileSystem) {
+	constructor(
+		private fs: VirtualFileSystem,
+		private options: ts.CompilerOptions,
+	) {
 
 	}
 
@@ -24,9 +31,14 @@ export class InMemoryHost implements ts.CompilerHost {
 			fileContent = this.fs.readFile(fileName);
 		} else if (/^lib\..*?d\.ts$/.test(fileName)) {
 			// resolving lib file
-			const libPath = path.join(path.dirname(require.resolve("typescript")), fileName);
+			const libPath = nodePath.join(nodePath.dirname(require.resolve("typescript")), fileName);
 			debug(`getSourceFile(fileName="${fileName}") => resolved lib file ${libPath}`);
 			fileContent = ts.sys.readFile(libPath);
+			if (fileContent != null) this.fs.provideFile(fileName, fileContent, true);
+		} else /* if (/node_modules.*?(ts|js|tsx|jsx)$/.test(fileName)) */ {
+			// resolving a specific node module
+			debug(`getSourceFile(fileName="${fileName}") => resolving typings`);
+			fileContent = ts.sys.readFile(fileName);
 			if (fileContent != null) this.fs.provideFile(fileName, fileContent, true);
 		}
 		if (fileContent != null) {
@@ -38,6 +50,7 @@ export class InMemoryHost implements ts.CompilerHost {
 	}
 
 	public getDefaultLibFileName(options: ts.CompilerOptions): string {
+		options = options || this.options;
 		debug(`getDefaultLibFileName(${JSON.stringify(options, null, 4)})`);
 		return "lib.d.ts";
 	}
@@ -72,9 +85,33 @@ export class InMemoryHost implements ts.CompilerHost {
 		return ts.sys.newLine;
 	}
 
-	// public resolveModuleNames?(moduleNames: string[], containingFile: string): ts.ResolvedModule[] {
-	// 	throw new Error("Method not implemented.");
-	// }
+	public resolveModuleNames?(moduleNames: string[], containingFile: string): ts.ResolvedModule[] {
+		debug(`resolveModuleNames(${moduleNames})`);
+		return moduleNames.map(moduleName => {
+			{ // try to use standard resolution
+				const result = ts.resolveModuleName(
+					moduleName, containingFile,
+					this.options,
+					{
+						fileExists: this.fileExists.bind(this),
+						readFile: this.readFile.bind(this),
+					},
+				);
+				if (result.resolvedModule) return result.resolvedModule;
+			}
+
+			try { // fall back to NodeJS resolution
+				const fileName = require.resolve(moduleName);
+				if (fileName === moduleName) return; // internal module
+				debug(`resolved ${moduleName} => ${fileName}`);
+				return {
+					resolvedFileName: fileName,
+				} as ts.ResolvedModule;
+			} catch {
+				/* Not found */
+			}
+		});
+	}
 
 	public fileExists(fileName: string): boolean {
 		debug(`fileExists(${fileName})`);

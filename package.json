@@ -1,6 +1,6 @@
 {
   "name": "virtual-tsc",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Provides means to compile TypeScript code in memory",
   "main": "build/index.js",
   "types": "./build/index.d.ts",
@@ -22,12 +22,14 @@
     "url": "https://github.com/AlCalzone/virtual-tsc/issues"
   },
   "homepage": "https://github.com/AlCalzone/virtual-tsc#readme",
+  "peerDependencies": {
+    "@types/node": "*",
+    "typescript": "^2.0.0"
+  },
   "dependencies": {
-    "debug": "^3.1.0",
-    "typescript": "^2.5.3"
+    "debug": "^3.1.0"
   },
   "devDependencies": {
-    "@types/node": "^8.0.34",
     "tslint": "^5.7.0"
   }
 }

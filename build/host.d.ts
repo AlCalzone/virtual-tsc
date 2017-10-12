@@ -5,7 +5,8 @@ import { VirtualFileSystem } from "./virtual-fs";
  */
 export declare class InMemoryHost implements ts.CompilerHost {
     private fs;
-    constructor(fs: VirtualFileSystem);
+    private options;
+    constructor(fs: VirtualFileSystem, options: ts.CompilerOptions);
     getSourceFile(fileName: string, languageVersion: ts.ScriptTarget, onError?: (message: string) => void): ts.SourceFile;
     getDefaultLibFileName(options: ts.CompilerOptions): string;
     writeFile(path: string, content: string): void;
@@ -14,6 +15,7 @@ export declare class InMemoryHost implements ts.CompilerHost {
     getCanonicalFileName(fileName: string): string;
     useCaseSensitiveFileNames(): boolean;
     getNewLine(): string;
+    resolveModuleNames?(moduleNames: string[], containingFile: string): ts.ResolvedModule[];
     fileExists(fileName: string): boolean;
     readFile(fileName: string): string;
 }
