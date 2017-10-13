@@ -12,4 +12,6 @@ export interface CompileResult {
     diagnostics: Diagnostic[];
     result?: string;
 }
-export declare function compile(script: string, compilerOptions?: ts.CompilerOptions): CompileResult;
+export declare function compile(script: string, compilerOptions?: ts.CompilerOptions, declarations?: {
+    [filename: string]: string;
+}): CompileResult;

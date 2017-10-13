@@ -1,6 +1,6 @@
 {
   "name": "virtual-tsc",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Provides means to compile TypeScript code in memory",
   "main": "build/index.js",
   "types": "./build/index.d.ts",
@@ -11,8 +11,8 @@
   "license": "MIT",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "compile": "node node_modules/typescript/.bin/tsc",
-    "watch": "npm run compile --watch"
+    "compile": "node node_modules/typescript/bin/tsc",
+    "watch": "npm run compile -- --watch"
   },
   "repository": {
     "type": "git",
@@ -30,6 +30,8 @@
     "debug": "^3.1.0"
   },
   "devDependencies": {
-    "tslint": "^5.7.0"
+    "@types/node": "^8.0.34",
+    "tslint": "^5.7.0",
+    "typescript": "^2.5.3"
   }
 }

@@ -29,6 +29,9 @@ export interface Diagnostic {
 
 ## Changelog
 
+#### 0.2.0 (2017-10-13)
+* (AlCalzone) support ambient declarations
+
 #### 0.1.0 (2017-10-13)
 * (AlCalzone) initial release. 
 

@@ -5,12 +5,7 @@ import { VirtualFileSystem } from "./virtual-fs";
 
 const debug = debugPackage("virtual-tsc");
 
-// see https://github.com/Microsoft/TypeScript/issues/13629 for an implementation
-// also: https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#customizing-module-resolution
-
-const NODEJS_MODULES = [
-	"fs", "path", // TODO
-];
+// reference: https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#customizing-module-resolution
 
 /**
  * Implementation of CompilerHost that works with in-memory-only source files
@@ -107,7 +102,7 @@ export class InMemoryHost implements ts.CompilerHost {
 				return {
 					resolvedFileName: fileName,
 				} as ts.ResolvedModule;
-			} catch {
+			} catch (e) {
 				/* Not found */
 			}
 		});

@@ -27,7 +27,7 @@ export interface CompileResult {
 	result?: string;
 }
 
-export function compile(script: string, compilerOptions?: ts.CompilerOptions): CompileResult {
+export function compile(script: string, compilerOptions?: ts.CompilerOptions, declarations: {[filename: string]: string} = {}): CompileResult {
 	const sourceLines = script.split("\n");
 
 	// set default compiler options
@@ -38,11 +38,21 @@ export function compile(script: string, compilerOptions?: ts.CompilerOptions): C
 	// provide the source file in the virtual fs
 	const fs = new VirtualFileSystem();
 	fs.provideFile(SCRIPT_FILENAME, script);
+	// provide all ambient declaration files
+	for (const ambientFile of Object.keys(declarations)) {
+		if (!/\.d\.ts$/.test(ambientFile)) throw new Error("Declarations must be .d.ts-files");
+		fs.provideFile(ambientFile, declarations[ambientFile], true);
+	}
 
 	// create the virtual host
 	const host = new InMemoryHost(fs, compilerOptions);
 	// create the compiler and provide nodejs typings
-	const program = ts.createProgram(["node_modules/@types/node/index.d.ts", SCRIPT_FILENAME], compilerOptions, host);
+	const allFiles = [
+		"node_modules/@types/node/index.d.ts",
+		...Object.keys(declarations),
+		SCRIPT_FILENAME,
+	];
+	const program = ts.createProgram(allFiles, compilerOptions, host);
 
 	// compile the script
 	const emitResult = program.emit();
