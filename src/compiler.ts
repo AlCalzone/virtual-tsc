@@ -32,7 +32,7 @@ export function compile(script: string, compilerOptions?: ts.CompilerOptions, de
 
 	// set default compiler options
 	compilerOptions = compilerOptions || {};
-	compilerOptions.noEmitOnError = true;
+	if (compilerOptions.noEmitOnError == null) compilerOptions.noEmitOnError = true;
 	compilerOptions.moduleResolution = ts.ModuleResolutionKind.NodeJs;
 
 	// provide the source file in the virtual fs
@@ -58,8 +58,8 @@ export function compile(script: string, compilerOptions?: ts.CompilerOptions, de
 	const emitResult = program.emit();
 
 	// diagnose the compilation result
-	const allDiagnostics = emitResult.diagnostics
-	.map(diagnostic => {
+	const rawDiagnostics = compilerOptions.noEmitOnError ? emitResult.diagnostics : ts.getPreEmitDiagnostics(program);
+	const diagnostics = rawDiagnostics.map(diagnostic => {
 		const { line: lineNr, character: charNr } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
 		const description = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
 		const type = ts.DiagnosticCategory[diagnostic.category].toLowerCase() as "error" | "warning" | "message";
@@ -77,13 +77,16 @@ ${type.toUpperCase()}: ${description}`;
 		} as Diagnostic;
 	});
 
-	const hasError = !allDiagnostics.every(d => d.type !== "error") || emitResult.emitSkipped;
+	const hasError = (
+		(!diagnostics.every(d => d.type !== "error") || emitResult.emitSkipped)
+		&& compilerOptions.noEmitOnError
+	);
 	let result: string;
 	if (!hasError) result = fs.readFile(SCRIPT_FILENAME.replace(/ts.?$/, "js"));
 
 	return {
 		success: !hasError,
-		diagnostics: allDiagnostics,
+		diagnostics: diagnostics,
 		result: result,
 	};
 }

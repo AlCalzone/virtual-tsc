@@ -3,7 +3,8 @@
 Provides means to compile TypeScript code to JavaScript in memory. 
 Requires `typescript` >= v2.0 and `@types/node` as peer dependencies, where `@types/node` should match your NodeJS runtime.
 
-Usage:
+## Usage
+
 ```
 import { compile } from "virtual-tsc";
 import * as ts from "typescript";
@@ -25,6 +26,9 @@ export interface Diagnostic {
 	description: string;
 	annotatedSource: string;
 }
+
+## Ambient declarations
+
 ```
 `declarations` is an object of the type:
 ```
@@ -42,7 +46,27 @@ declare global {
 ```
 To support augmentation of the global scope (like in the above file), you must force TypeScript to treat the file as a module. This can be done by a dummy import of a core NodeJS module.
 
+## Error-tolerant compilation
+
+By specifying `noEmitOnError: false` on the `compilerOptions` object, you can get a compiled result even if there were build errors. For example, the code
+```
+const test: string = 1
+```
+then compiles to the valid JavaScript
+```
+var test = 1
+```
+but you get the additional error message
+```
+const test: string = 1
+      ^
+ERROR: Type '1' is not assignable to type 'string'.
+```
+
 ## Changelog
+
+#### 0.2.1 (2017-10-13)
+* (AlCalzone) support output of builds with errors
 
 #### 0.2.0 (2017-10-13)
 * (AlCalzone) support ambient declarations
