@@ -29,6 +29,19 @@ export interface CompileResult {
 	result?: string;
 }
 
+export function compileAsync(script: string, compilerOptions?: ts.CompilerOptions, declarations: {[filename: string]: string} = {}): Promise<CompileResult> {
+	return new Promise<CompileResult>((res, rej) => {
+		setImmediate(() => {
+			try {
+				const ret = compile(script, compilerOptions, declarations);
+				res(ret);
+			} catch (e) {
+				rej(e);
+			}
+		});
+	});
+}
+
 export function compile(script: string, compilerOptions?: ts.CompilerOptions, declarations: {[filename: string]: string} = {}): CompileResult {
 	const sourceLines = script.split("\n");
 
@@ -50,7 +63,7 @@ export function compile(script: string, compilerOptions?: ts.CompilerOptions, de
 	const host = new InMemoryHost(fs, compilerOptions);
 	// create the compiler and provide nodejs typings
 	const allFiles = [
-		"node_modules/@types/node/index.d.ts",
+		"@types/node/index.d.ts",
 		...Object.keys(declarations),
 		SCRIPT_FILENAME,
 	];
@@ -62,7 +75,12 @@ export function compile(script: string, compilerOptions?: ts.CompilerOptions, de
 	// diagnose the compilation result
 	const rawDiagnostics = compilerOptions.noEmitOnError ? emitResult.diagnostics : ts.getPreEmitDiagnostics(program);
 	const diagnostics = rawDiagnostics.map(diagnostic => {
-		const { line: lineNr, character: charNr } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+		let lineNr = 0;
+		let charNr = 0;
+		if (diagnostic.file != null) {
+			const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+			[lineNr, charNr] = [line, character];
+		}
 		const description = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
 		const type = ts.DiagnosticCategory[diagnostic.category].toLowerCase() as "error" | "warning" | "message";
 		const sourceLine = sourceLines[lineNr];

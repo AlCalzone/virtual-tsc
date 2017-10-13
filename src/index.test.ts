@@ -1,22 +1,34 @@
 import { assert, expect } from "chai";
+import * as ts from "typescript";
 import { compile, CompileResult, Diagnostic } from "./";
 // tslint:disable:no-unused-expression
 // tslint:disable:no-eval
 
+const options = {
+	// for now allow failed compilation
+	// remove this line when we have an ambient declaration
+	// for the script adapter
+	noEmitOnError: false,
+	// change this to "es6" if we're dropping support for NodeJS 4.x
+	target: ts.ScriptTarget.ES5,
+	// we need this for the native promise support in NodeJS 4.x
+	lib: ["lib.es6.d.ts"],
+};
+
 describe("compiler => ", () => {
 
 	it("it should not explode", () => {
-		const result = compile("");
+		const result = compile("", options);
 		expect(result.success).to.be.true;
 		expect(result.diagnostics).to.be.empty;
 		expect(result.result).to.equal("");
 	});
 
 	it("some basic stuff should work", () => {
-		const ts = `let ret: number = 0;
+		const source = `let ret: number = 0;
 for (const x of [1,2,3,4,5]) ret += x;
 ret;`;
-		const result = compile(ts);
+		const result = compile(source);
 		expect(result.success).to.be.true;
 		expect(result.diagnostics).to.be.empty;
 		expect(eval(result.result)).to.equal(15);

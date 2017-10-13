@@ -1,1 +1,1 @@
-export { compile, CompileResult, Diagnostic } from "./compiler";
+export { compile, compileAsync, CompileResult, Diagnostic } from "./compiler";
