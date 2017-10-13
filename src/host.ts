@@ -29,12 +29,12 @@ export class InMemoryHost implements ts.CompilerHost {
 			const libPath = nodePath.join(nodePath.dirname(require.resolve("typescript")), fileName);
 			debug(`getSourceFile(fileName="${fileName}") => resolved lib file ${libPath}`);
 			fileContent = ts.sys.readFile(libPath);
-			if (fileContent != null) this.fs.provideFile(fileName, fileContent, true);
+			if (fileContent != null) this.fs.writeFile(fileName, fileContent, true);
 		} else /* if (/node_modules.*?(ts|js|tsx|jsx)$/.test(fileName)) */ {
 			// resolving a specific node module
 			debug(`getSourceFile(fileName="${fileName}") => resolving typings`);
 			fileContent = ts.sys.readFile(fileName);
-			if (fileContent != null) this.fs.provideFile(fileName, fileContent, true);
+			if (fileContent != null) this.fs.writeFile(fileName, fileContent, true);
 		}
 		if (fileContent != null) {
 			debug("file content is not null");
@@ -52,7 +52,7 @@ export class InMemoryHost implements ts.CompilerHost {
 
 	public writeFile(path: string, content: string) {
 		debug(`writeFile(path="${path}")`);
-		this.fs.provideFile(path, content, true);
+		this.fs.writeFile(path, content, true);
 	}
 
 	public getCurrentDirectory(): string {

@@ -37,11 +37,11 @@ export function compile(script: string, compilerOptions?: ts.CompilerOptions, de
 
 	// provide the source file in the virtual fs
 	const fs = new VirtualFileSystem();
-	fs.provideFile(SCRIPT_FILENAME, script);
+	fs.writeFile(SCRIPT_FILENAME, script);
 	// provide all ambient declaration files
 	for (const ambientFile of Object.keys(declarations)) {
 		if (!/\.d\.ts$/.test(ambientFile)) throw new Error("Declarations must be .d.ts-files");
-		fs.provideFile(ambientFile, declarations[ambientFile], true);
+		fs.writeFile(ambientFile, declarations[ambientFile], true);
 	}
 
 	// create the virtual host

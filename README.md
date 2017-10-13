@@ -7,7 +7,7 @@ Usage:
 ```
 import { compile } from "virtual-tsc";
 import * as ts from "typescript";
-const result: CompileResult = compile(sourceCode: string, compilerOptions: ts.CompilerOptions);
+const result: CompileResult = compile(sourceCode: string, compilerOptions?: ts.CompilerOptions, declarations?);
 ```
 where `CompileResult` looks as follows:
 ```
@@ -26,6 +26,21 @@ export interface Diagnostic {
 	annotatedSource: string;
 }
 ```
+`declarations` is an object of the type:
+```
+{
+	"filename1.d.ts": "file contents 1",
+	// ...
+}
+```
+and is used to specify ambient declarations. Filenames must end in `.d.ts`. For instance you can declare a function log that exists in the global scope by providing a file like the following:
+```
+import * as fs from "fs"; // dummy import
+declare global {
+	function log(text: string);
+}
+```
+To support augmentation of the global scope (like in the above file), you must force TypeScript to treat the file as a module. This can be done by a dummy import of a core NodeJS module.
 
 ## Changelog
 

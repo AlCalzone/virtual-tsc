@@ -4,19 +4,37 @@ class VirtualFileSystem {
     constructor() {
         this.files = {};
     }
-    provideFile(filename, content, override = false) {
-        if (this.fileExists(filename) && !override) {
-            throw new Error(`The file ${filename} already exists. Set override to true if you want to override it`);
+    /**
+     * Writes a file in the virtual FS
+     * @param filename The path this file should be stored as
+     * @param content The contents of the file
+     * @param overwrite If existing files should be overwritten
+     */
+    writeFile(filename, content, overwrite = false) {
+        if (!overwrite && this.fileExists(filename)) {
+            throw new Error(`The file ${filename} already exists. Set overwrite to true if you want to override it`);
         }
         this.files[filename] = content;
     }
+    /**
+     * Checks if a file exists in the virtual FS
+     * @param filename The path of the file to look for
+     */
     fileExists(filename) {
         return filename in this.files;
     }
+    /**
+     * Deletes a file in the virtual FS. If the file doesn't exist, nothing happens.
+     * @param filename The path of the file to look for
+     */
     deleteFile(filename) {
         if (this.fileExists(filename))
             delete this.files[filename];
     }
+    /**
+     * Reads a file's contents from the virtual FS
+     * @param filename The path of the file to look for
+     */
     readFile(filename) {
         if (!this.fileExists(filename)) {
             throw new Error(`The file ${filename} doesn't exist`);
@@ -25,4 +43,4 @@ class VirtualFileSystem {
     }
 }
 exports.VirtualFileSystem = VirtualFileSystem;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoidmlydHVhbC1mcy5qcyIsInNvdXJjZVJvb3QiOiJEOi92aXJ0dWFsLXRzYy9zcmMvIiwic291cmNlcyI6WyJ2aXJ0dWFsLWZzLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBQUE7SUFBQTtRQXlCUyxVQUFLLEdBQWlDLEVBQUUsQ0FBQztJQUVsRCxDQUFDO0lBekJPLFdBQVcsQ0FBQyxRQUFnQixFQUFFLE9BQWUsRUFBRSxXQUFvQixLQUFLO1FBQzlFLEVBQUUsQ0FBQyxDQUFDLElBQUksQ0FBQyxVQUFVLENBQUMsUUFBUSxDQUFDLElBQUksQ0FBQyxRQUFRLENBQUMsQ0FBQyxDQUFDO1lBQzVDLE1BQU0sSUFBSSxLQUFLLENBQUMsWUFBWSxRQUFRLGtFQUFrRSxDQUFDLENBQUM7UUFDekcsQ0FBQztRQUVELElBQUksQ0FBQyxLQUFLLENBQUMsUUFBUSxDQUFDLEdBQUcsT0FBTyxDQUFDO0lBQ2hDLENBQUM7SUFFTSxVQUFVLENBQUMsUUFBZ0I7UUFDakMsTUFBTSxDQUFDLFFBQVEsSUFBSSxJQUFJLENBQUMsS0FBSyxDQUFDO0lBQy9CLENBQUM7SUFFTSxVQUFVLENBQUMsUUFBZ0I7UUFDakMsRUFBRSxDQUFDLENBQUMsSUFBSSxDQUFDLFVBQVUsQ0FBQyxRQUFRLENBQUMsQ0FBQztZQUFDLE9BQU8sSUFBSSxDQUFDLEtBQUssQ0FBQyxRQUFRLENBQUMsQ0FBQztJQUM1RCxDQUFDO0lBRU0sUUFBUSxDQUFDLFFBQWdCO1FBQy9CLEVBQUUsQ0FBQyxDQUFDLENBQUMsSUFBSSxDQUFDLFVBQVUsQ0FBQyxRQUFRLENBQUMsQ0FBQyxDQUFDLENBQUM7WUFDaEMsTUFBTSxJQUFJLEtBQUssQ0FBQyxZQUFZLFFBQVEsZ0JBQWdCLENBQUMsQ0FBQztRQUN2RCxDQUFDO1FBQ0QsTUFBTSxDQUFDLElBQUksQ0FBQyxLQUFLLENBQUMsUUFBUSxDQUFDLENBQUM7SUFDN0IsQ0FBQztDQUlEO0FBM0JELDhDQTJCQyJ9
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoidmlydHVhbC1mcy5qcyIsInNvdXJjZVJvb3QiOiJEOi92aXJ0dWFsLXRzYy9zcmMvIiwic291cmNlcyI6WyJ2aXJ0dWFsLWZzLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBQUE7SUFBQTtRQTJDUyxVQUFLLEdBQWlDLEVBQUUsQ0FBQztJQUVsRCxDQUFDO0lBM0NBOzs7OztPQUtHO0lBQ0ksU0FBUyxDQUFDLFFBQWdCLEVBQUUsT0FBZSxFQUFFLFlBQXFCLEtBQUs7UUFDN0UsRUFBRSxDQUFDLENBQUMsQ0FBQyxTQUFTLElBQUksSUFBSSxDQUFDLFVBQVUsQ0FBQyxRQUFRLENBQUMsQ0FBQyxDQUFDLENBQUM7WUFDN0MsTUFBTSxJQUFJLEtBQUssQ0FBQyxZQUFZLFFBQVEsbUVBQW1FLENBQUMsQ0FBQztRQUMxRyxDQUFDO1FBRUQsSUFBSSxDQUFDLEtBQUssQ0FBQyxRQUFRLENBQUMsR0FBRyxPQUFPLENBQUM7SUFDaEMsQ0FBQztJQUVEOzs7T0FHRztJQUNJLFVBQVUsQ0FBQyxRQUFnQjtRQUNqQyxNQUFNLENBQUMsUUFBUSxJQUFJLElBQUksQ0FBQyxLQUFLLENBQUM7SUFDL0IsQ0FBQztJQUVEOzs7T0FHRztJQUNJLFVBQVUsQ0FBQyxRQUFnQjtRQUNqQyxFQUFFLENBQUMsQ0FBQyxJQUFJLENBQUMsVUFBVSxDQUFDLFFBQVEsQ0FBQyxDQUFDO1lBQUMsT0FBTyxJQUFJLENBQUMsS0FBSyxDQUFDLFFBQVEsQ0FBQyxDQUFDO0lBQzVELENBQUM7SUFFRDs7O09BR0c7SUFDSSxRQUFRLENBQUMsUUFBZ0I7UUFDL0IsRUFBRSxDQUFDLENBQUMsQ0FBQyxJQUFJLENBQUMsVUFBVSxDQUFDLFFBQVEsQ0FBQyxDQUFDLENBQUMsQ0FBQztZQUNoQyxNQUFNLElBQUksS0FBSyxDQUFDLFlBQVksUUFBUSxnQkFBZ0IsQ0FBQyxDQUFDO1FBQ3ZELENBQUM7UUFDRCxNQUFNLENBQUMsSUFBSSxDQUFDLEtBQUssQ0FBQyxRQUFRLENBQUMsQ0FBQztJQUM3QixDQUFDO0NBSUQ7QUE3Q0QsOENBNkNDIn0=
