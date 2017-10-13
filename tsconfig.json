@@ -11,6 +11,6 @@
         "sourceMap": false,
         "inlineSourceMap": true,
         "sourceRoot": "src/",
-        "target": "es2015"
+        "target": "es5"
     }
 }

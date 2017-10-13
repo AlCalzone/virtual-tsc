@@ -65,6 +65,9 @@ ERROR: Type '1' is not assignable to type 'string'.
 
 ## Changelog
 
+#### 0.2.2 (2017-10-13)
+* (AlCalzone) support NodeJS 4
+
 #### 0.2.1 (2017-10-13)
 * (AlCalzone) support output of builds with errors
 

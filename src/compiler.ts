@@ -15,7 +15,9 @@ export interface Diagnostic {
 }
 
 function repeatString(str: string, count: number): string {
-	if (str.repeat != null) return str.repeat(count);
+	// newer node versions
+	if ((str as any).repeat != null) return (str as any).repeat(count);
+	// older node versions
 	let ret = "";
 	for (let i = 0; i < count; i++) ret += str;
 	return ret;
