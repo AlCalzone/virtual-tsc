@@ -5,13 +5,13 @@ Requires `typescript` >= v2.0 and `@types/node` as peer dependencies, where `@ty
 
 ## Usage
 
-```
+```TS
 import { compile } from "virtual-tsc";
 import * as ts from "typescript";
 const result: CompileResult = compile(sourceCode: string, compilerOptions?: ts.CompilerOptions, declarations?);
 ```
 where `CompileResult` looks as follows:
-```
+```TS
 export interface CompileResult {
 	success: boolean;
 	diagnostics: Diagnostic[];
@@ -31,14 +31,14 @@ export interface Diagnostic {
 
 ```
 `declarations` is an object of the type:
-```
+```JS
 {
 	"filename1.d.ts": "file contents 1",
 	// ...
 }
 ```
 and is used to specify ambient declarations. Filenames must end in `.d.ts`. For instance you can declare a function log that exists in the global scope by providing a file like the following:
-```
+```TS
 import * as fs from "fs"; // dummy import
 declare global {
 	function log(text: string);
@@ -49,15 +49,15 @@ To support augmentation of the global scope (like in the above file), you must f
 ## Error-tolerant compilation
 
 By specifying `noEmitOnError: false` on the `compilerOptions` object, you can get a compiled result even if there were build errors. For example, the code
-```
+```TS
 const test: string = 1
 ```
 then compiles to the valid JavaScript
-```
+```JS
 var test = 1
 ```
 but you get the additional error message
-```
+```JS
 const test: string = 1
       ^
 ERROR: Type '1' is not assignable to type 'string'.
