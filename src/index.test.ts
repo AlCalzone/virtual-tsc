@@ -80,13 +80,13 @@ declare global {
 		}
 	});
 
-	// it.only("service host", () => {
-	// 	const ambient = fs.readFileSync("./test/ioBroker.d.ts", "utf8");
-	// 	const tsserver = new Server();
-	// 	tsserver.provideAmbientDeclarations({"global.d.ts": ambient});
-	// 	let result: CompileResult = tsserver.compile("index.ts", ``);
-	// 	console.dir(result.diagnostics);
+	it.only("service host", () => {
+		const ambient = fs.readFileSync("./test/ioBroker.d.ts", "utf8");
+		const tsserver = new Server();
+		tsserver.provideAmbientDeclarations({"global.d.ts": ambient});
+		let result: CompileResult = tsserver.compile("index.ts", ``);
+		console.dir(result.diagnostics);
 
-	// });
+	});
 
 });
