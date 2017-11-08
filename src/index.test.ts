@@ -1,6 +1,8 @@
 import { assert, expect } from "chai";
+import * as fs from "fs";
 import * as ts from "typescript";
 import { compile, CompileResult, Diagnostic } from "./";
+import { Server } from "./server";
 // tslint:disable:no-unused-expression
 // tslint:disable:no-eval
 
@@ -66,5 +68,25 @@ declare global {
 	it("it should force ambient declarations to be .d.ts files", () => {
 		expect(() => compile("", null, {"global.ts": ""})).to.throw();
 	});
+
+	it("performance check", function() {
+		this.timeout(10000);
+		const ambient = fs.readFileSync("./test/ioBroker.d.ts", "utf8");
+		let result: CompileResult;
+		for (let i = 0; i < 5; i++) {
+			result = compile(``, null, {"global.d.ts": ambient});
+			expect(result.success).to.be.true;
+			// about 700ms per call
+		}
+	});
+
+	// it.only("service host", () => {
+	// 	const ambient = fs.readFileSync("./test/ioBroker.d.ts", "utf8");
+	// 	const tsserver = new Server();
+	// 	tsserver.provideAmbientDeclarations({"global.d.ts": ambient});
+	// 	let result: CompileResult = tsserver.compile("index.ts", ``);
+	// 	console.dir(result.diagnostics);
+
+	// });
 
 });

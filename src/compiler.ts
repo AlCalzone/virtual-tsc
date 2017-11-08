@@ -1,33 +1,10 @@
 import * as ts from "typescript";
 import * as util from "util";
 import { InMemoryHost } from "./host";
+import { CompileResult, Diagnostic, repeatString } from "./util";
 import { VirtualFileSystem } from "./virtual-fs";
 
 const SCRIPT_FILENAME: string = "__virtual-tsc__.ts";
-
-export interface Diagnostic {
-	type: "error" | "warning" | "message";
-	lineNr: number;
-	charNr: number;
-	sourceLine: string;
-	description: string;
-	annotatedSource: string;
-}
-
-function repeatString(str: string, count: number): string {
-	// newer node versions
-	if ((str as any).repeat != null) return (str as any).repeat(count);
-	// older node versions
-	let ret = "";
-	for (let i = 0; i < count; i++) ret += str;
-	return ret;
-}
-
-export interface CompileResult {
-	success: boolean;
-	diagnostics: Diagnostic[];
-	result?: string;
-}
 
 export function compileAsync(script: string, compilerOptions?: ts.CompilerOptions, declarations: {[filename: string]: string} = {}): Promise<CompileResult> {
 	return new Promise<CompileResult>((res, rej) => {
