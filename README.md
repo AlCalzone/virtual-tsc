@@ -13,35 +13,34 @@ const result: CompileResult = compile(sourceCode: string, compilerOptions?: ts.C
 where `CompileResult` looks as follows:
 ```TS
 export interface CompileResult {
-	success: boolean;
-	diagnostics: Diagnostic[];
-	result?: string;
+    success: boolean;
+    diagnostics: Diagnostic[];
+    result?: string;
 }
 
 export interface Diagnostic {
-	type: "error" | "warning" | "message";
-	lineNr: number;
-	charNr: number;
-	sourceLine: string;
-	description: string;
-	annotatedSource: string;
+    type: "error" | "warning" | "message";
+    lineNr: number;
+    charNr: number;
+    sourceLine: string;
+    description: string;
+    annotatedSource: string;
 }
+```
 
 ## Ambient declarations
-
-```
 `declarations` is an object of the type:
 ```JS
 {
-	"filename1.d.ts": "file contents 1",
-	// ...
+    "filename1.d.ts": "file contents 1",
+    // ...
 }
 ```
-and is used to specify ambient declarations. Filenames must end in `.d.ts`. For instance you can declare a function log that exists in the global scope by providing a file like the following:
+and is used to specify ambient declarations. Filenames must end in `.d.ts`. For instance you can declare a function `log` that exists in the global scope by providing a file like the following:
 ```TS
 import * as fs from "fs"; // dummy import
 declare global {
-	function log(text: string);
+    function log(text: string);
 }
 ```
 To support augmentation of the global scope (like in the above file), you must force TypeScript to treat the file as a module. This can be done by a dummy import of a core NodeJS module.
