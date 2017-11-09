@@ -45,12 +45,14 @@ export class Server {
 		const sourceLines = scriptContent.split("\n");
 		this.fs.writeFile(filename, scriptContent, true);
 
+		const rawDiagnostics: ts.Diagnostic[] = [];
+		rawDiagnostics.push(...this.service.getSyntacticDiagnostics(filename));
+		rawDiagnostics.push(...this.service.getSemanticDiagnostics(filename));
+
 		const emitResult = this.service.getEmitOutput(filename);
 
-		const rawDiagnostics = this.service.getCompilerOptionsDiagnostics()
-			.concat(this.service.getSyntacticDiagnostics(filename))
-			.concat(this.service.getSemanticDiagnostics(filename))
-		;
+		rawDiagnostics.push(...this.service.getCompilerOptionsDiagnostics());
+
 		const diagnostics = rawDiagnostics.map(diagnostic => {
 			let lineNr = 0;
 			let charNr = 0;
