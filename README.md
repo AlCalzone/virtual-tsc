@@ -84,7 +84,7 @@ ERROR: Type '1' is not assignable to type 'string'.
 
 ## Changelog
 
-#### 0.3.0 (2017-11-XX)
+#### 0.3.0 (2017-11-09)
 * (AlCalzone) Use the LanguageServiceAPI to speed up multiple compilations
 
 #### 0.2.3 (2017-10-13)

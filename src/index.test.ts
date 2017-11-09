@@ -70,7 +70,7 @@ declare global {
 		expect(() => compile("", null, {"global.ts": ""})).to.throw();
 	});
 
-	describe.only("performance check =>", () => {
+	describe("performance check =>", () => {
 		it("compile()", function() {
 			this.timeout(10000);
 			const ambient = fs.readFileSync("./test/ioBroker.d.ts", "utf8");
