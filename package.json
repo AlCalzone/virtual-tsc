@@ -1,6 +1,6 @@
 {
   "name": "virtual-tsc",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Provides means to compile TypeScript code in memory",
   "main": "build/index.js",
   "types": "./build/index.d.ts",
