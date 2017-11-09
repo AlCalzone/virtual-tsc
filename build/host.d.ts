@@ -8,7 +8,6 @@ export declare class InMemoryHost implements ts.CompilerHost {
     private options;
     constructor(fs: VirtualFileSystem, options: ts.CompilerOptions);
     getSourceFile(fileName: string, languageVersion: ts.ScriptTarget, onError?: (message: string) => void): ts.SourceFile;
-    private resolveTypings(typings);
     getDefaultLibFileName(options: ts.CompilerOptions): string;
     writeFile(path: string, content: string): void;
     getCurrentDirectory(): string;

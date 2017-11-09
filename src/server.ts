@@ -1,7 +1,6 @@
 import * as ts from "typescript";
-import * as util from "util";
 import { InMemoryServiceHost } from "./service-host";
-import { CompileResult, Diagnostic, repeatString } from "./util";
+import { CompileResult, Diagnostic, repeatString, resolveTypings } from "./util";
 import { VirtualFileSystem } from "./virtual-fs";
 
 export class Server {
@@ -20,6 +19,18 @@ export class Server {
 		this.fs = new VirtualFileSystem();
 		this.host = new InMemoryServiceHost(this.fs, this.options);
 		this.service = ts.createLanguageService(this.host, ts.createDocumentRegistry());
+
+		// provide the most basic typings
+		const basicTypings = [
+			"@types/node/index.d.ts",
+			"@types/node/inspector.d.ts",
+		];
+		for (const typings of basicTypings) {
+			// resolving a specific node module
+			const path = resolveTypings(typings);
+			const fileContent = ts.sys.readFile(path);
+			if (fileContent != null) this.fs.writeFile(typings, fileContent, true);
+		}
 	}
 
 	public provideAmbientDeclarations(declarations: {[filename: string]: string} = {}) {
@@ -32,7 +43,7 @@ export class Server {
 
 	public compile(filename: string, scriptContent: string): CompileResult {
 		const sourceLines = scriptContent.split("\n");
-		this.fs.writeFile(filename, scriptContent);
+		this.fs.writeFile(filename, scriptContent, true);
 
 		const emitResult = this.service.getEmitOutput(filename);
 

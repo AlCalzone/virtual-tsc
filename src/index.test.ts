@@ -1,8 +1,9 @@
-import { assert, expect } from "chai";
+import { expect } from "chai";
 import * as fs from "fs";
 import * as ts from "typescript";
-import { compile, CompileResult, Diagnostic } from "./";
+import { compile, CompileResult } from "./";
 import { Server } from "./server";
+
 // tslint:disable:no-unused-expression
 // tslint:disable:no-eval
 
@@ -69,24 +70,36 @@ declare global {
 		expect(() => compile("", null, {"global.ts": ""})).to.throw();
 	});
 
-	it("performance check", function() {
-		this.timeout(10000);
-		const ambient = fs.readFileSync("./test/ioBroker.d.ts", "utf8");
-		let result: CompileResult;
-		for (let i = 0; i < 5; i++) {
-			result = compile(``, null, {"global.d.ts": ambient});
-			expect(result.success).to.be.true;
-			// about 700ms per call
-		}
-	});
+	describe.only("performance check =>", () => {
+		it("compile()", function() {
+			this.timeout(10000);
+			const ambient = fs.readFileSync("./test/ioBroker.d.ts", "utf8");
+			let result: CompileResult;
+			for (let i = 0; i < 5; i++) {
+				result = compile(
+					`const buf = Buffer.alloc(${i} + 1);
+					console.log(buf.length)`,
+					null, {"global.d.ts": ambient},
+				);
+				expect(result.success).to.be.true;
+				// about 700ms per call
+			}
+		});
 
-	it.only("service host", () => {
-		const ambient = fs.readFileSync("./test/ioBroker.d.ts", "utf8");
-		const tsserver = new Server();
-		tsserver.provideAmbientDeclarations({"global.d.ts": ambient});
-		let result: CompileResult = tsserver.compile("index.ts", ``);
-		console.dir(result.diagnostics);
-
+		it("service host", () => {
+			const tsserver = new Server(options);
+			const ambient = fs.readFileSync("./test/ioBroker.d.ts", "utf8");
+			tsserver.provideAmbientDeclarations({"global.d.ts": ambient});
+			let result: CompileResult;
+			for (let i = 0; i < 5; i++) {
+				result = tsserver.compile("index.ts",
+				`const buf = Buffer.alloc(${i} + 1);
+				console.log(buf.length)`,
+			);
+				expect(result.success).to.be.true;
+				// about 4ms per call (after the 1st one)
+			}
+		});
 	});
 
 });

@@ -1,5 +1,4 @@
 import * as ts from "typescript";
-import * as util from "util";
 import { InMemoryHost } from "./host";
 import { CompileResult, Diagnostic, repeatString } from "./util";
 import { VirtualFileSystem } from "./virtual-fs";

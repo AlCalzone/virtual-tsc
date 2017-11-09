@@ -1,4 +1,4 @@
-import { assert, expect } from "chai";
+import { expect } from "chai";
 import { VirtualFileSystem } from "./virtual-fs";
 // tslint:disable:no-unused-expression
 
