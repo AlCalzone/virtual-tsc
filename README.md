@@ -45,6 +45,25 @@ declare global {
 ```
 To support augmentation of the global scope (like in the above file), you must force TypeScript to treat the file as a module. This can be done by a dummy import of a core NodeJS module.
 
+## Faster compilation with the Language Service API
+As of version 0.3.0, this library supports incremental compilation with the TypeScript Language Service API. In simple tests, compile times for recurring compilations could be **reduced by at least 99%**. The usage changes slightly:
+```TS
+import { Server as TSServer } from "virtual-tsc";
+
+// Create a new instance of the compiler with optional compiler options
+const tsserver = new TSServer(options?: ts.CompilerOptions);
+
+// optionally provide ambient declarations
+tsserver.provideAmbientDeclarations(declarations);
+
+// compile whenever the source file changes:
+const result = tsserver.compile(
+	filename /* string */,
+	source /* string */
+);
+```
+By providing a filename for the source, it is possible to compile multiple scripts on one instance of the compiler.
+
 ## Error-tolerant compilation
 
 By specifying `noEmitOnError: false` on the `compilerOptions` object, you can get a compiled result even if there were build errors. For example, the code
@@ -63,6 +82,9 @@ ERROR: Type '1' is not assignable to type 'string'.
 ```
 
 ## Changelog
+
+#### 0.3.0 (2017-11-09)
+* (AlCalzone) Use the LanguageServiceAPI to speed up multiple compilations
 
 #### 0.2.3 (2017-10-13)
 * (AlCalzone) Fixed module resolution on Linux

@@ -21,5 +21,15 @@ export declare class VirtualFileSystem {
      * @param filename The path of the file to look for
      */
     readFile(filename: string): string;
+    /**
+     * Returns the revision number of a file in the virtual FS
+     * @param filename The path of the file to look for
+     */
+    getFileVersion(filename: string): number;
+    /**
+     * Returns the file names of all files in the virtual fs
+     */
+    getFilenames(): string[];
+    getDirectories(root: string): string[];
     private files;
 }
