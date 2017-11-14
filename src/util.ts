@@ -56,3 +56,11 @@ export function resolveTypings(typings: string): string {
 	debug(" => no success");
 	return null;
 }
+
+export function resolveLib(libFile: string): string {
+	debug(`resolving lib file ${libFile}`);
+	// resolving lib file
+	const libPath = nodePath.join(nodePath.dirname(require.resolve("typescript")), libFile);
+	debug(`libPath = ${libPath}`);
+	if (ts.sys.fileExists(libPath)) return libPath;
+}

@@ -14,3 +14,4 @@ export interface CompileResult {
 }
 export declare function startsWith(str: string, match: string): boolean;
 export declare function resolveTypings(typings: string): string;
+export declare function resolveLib(libFile: string): string;

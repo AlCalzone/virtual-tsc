@@ -1,6 +1,6 @@
 import * as ts from "typescript";
 import { InMemoryServiceHost } from "./service-host";
-import { CompileResult, Diagnostic, repeatString, resolveTypings } from "./util";
+import { CompileResult, Diagnostic, repeatString, resolveLib, resolveTypings } from "./util";
 import { VirtualFileSystem } from "./virtual-fs";
 
 export class Server {
@@ -19,6 +19,17 @@ export class Server {
 		this.fs = new VirtualFileSystem();
 		this.host = new InMemoryServiceHost(this.fs, this.options);
 		this.service = ts.createLanguageService(this.host, ts.createDocumentRegistry());
+
+		// provide the requested lib files
+		if (!options.noLib) {
+			const libFiles = options.lib || [this.host.getDefaultLibFileName(options)];
+			for (const file of libFiles) {
+				const path = resolveLib(file);
+				if (path == null) continue;
+				const fileContent = ts.sys.readFile(path);
+				if (fileContent != null) this.fs.writeFile(file, fileContent, true);
+			}
+		}
 
 		// provide the most basic typings
 		const basicTypings = [

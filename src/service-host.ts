@@ -72,15 +72,6 @@ export class InMemoryServiceHost implements ts.LanguageServiceHost {
 		let ret: boolean;
 		if (this.fs.fileExists(path)) {
 			ret = true;
-		} else if (/lib\..*?d\.ts/.test(path)) {
-			const libFile = /lib\..*?d\.ts/.exec(path)[0];
-			// resolving lib file
-			const libPath = nodePath.join(nodePath.dirname(require.resolve("typescript")), libFile);
-			const fileContent = ts.sys.readFile(libPath);
-			if (fileContent != null) {
-				this.fs.writeFile(libFile, fileContent, true);
-				ret = true;
-			}
 		} else if (path.indexOf("node_modules") > -1) {
 			ret = ts.sys.fileExists(path);
 		}
