@@ -1,8 +1,6 @@
-import * as debugPackage from "debug";
 import * as nodePath from "path";
 import * as ts from "typescript";
-
-const debug = debugPackage("virtual-tsc");
+import { log } from "./logger";
 
 export interface Diagnostic {
 	type: "error" | "warning" | "message";
@@ -40,27 +38,27 @@ export function resolveTypings(typings: string): string {
 		// this is an absolute path
 		typings = typings.substr(typings.indexOf("@types"));
 	}
-	debug(`resolveTypings(${typings})`);
+	log(`resolveTypings(${typings})`, "debug");
 	const pathParts = __dirname.split(nodePath.sep);
 	// start with / on linux
 	if (startsWith(__dirname, nodePath.sep)) pathParts.unshift(nodePath.sep);
 	// try all dirs up to the root
 	for (let i = 0; i < pathParts.length; i++) {
 		const path = nodePath.join(...(pathParts.slice(0, pathParts.length - i)), "node_modules", typings);
-		debug(` => trying ${path}`);
+		log(` => trying ${path}`, "debug");
 		if (ts.sys.fileExists(path)) {
-			debug(" => success");
+			log(" => success", "debug");
 			return path;
 		}
 	}
-	debug(" => no success");
+	log(" => no success", "debug");
 	return null;
 }
 
 export function resolveLib(libFile: string): string {
-	debug(`resolving lib file ${libFile}`);
+	log(`resolving lib file ${libFile}`, "debug");
 	// resolving lib file
 	const libPath = nodePath.join(nodePath.dirname(require.resolve("typescript")), libFile);
-	debug(`libPath = ${libPath}`);
+	log(`libPath = ${libPath}`, "debug");
 	if (ts.sys.fileExists(libPath)) return libPath;
 }

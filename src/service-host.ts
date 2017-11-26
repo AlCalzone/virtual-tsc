@@ -1,9 +1,7 @@
-import * as debugPackage from "debug";
 import * as nodePath from "path";
 import * as ts from "typescript";
+import { log } from "./logger";
 import { VirtualFileSystem } from "./virtual-fs";
-
-const debug = debugPackage("virtual-tsc");
 
 // https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#incremental-build-support-using-the-language-services
 
@@ -46,7 +44,7 @@ export class InMemoryServiceHost implements ts.LanguageServiceHost {
 
 	public getDefaultLibFileName(options: ts.CompilerOptions): string {
 		options = options || this.options;
-		debug(`getDefaultLibFileName(${JSON.stringify(options, null, 4)})`);
+		log(`getDefaultLibFileName(${JSON.stringify(options, null, 4)})`, "debug");
 		return "lib.d.ts";
 	}
 	// log?(s: string): void {
@@ -60,7 +58,7 @@ export class InMemoryServiceHost implements ts.LanguageServiceHost {
 	// }
 
 	public readFile(path: string, encoding?: string): string {
-		debug(`readFile(${path})`);
+		log(`readFile(${path})`, "debug");
 		if (this.fs.fileExists(path)) {
 			return this.fs.readFile(path);
 		} else if (path.indexOf("node_modules") > -1) {
@@ -68,30 +66,30 @@ export class InMemoryServiceHost implements ts.LanguageServiceHost {
 		}
 	}
 	public fileExists(path: string): boolean {
-		debug(`fileExists(${path})`);
+		log(`fileExists(${path})`, "debug");
 		let ret: boolean;
 		if (this.fs.fileExists(path)) {
 			ret = true;
 		} else if (path.indexOf("node_modules") > -1) {
 			ret = ts.sys.fileExists(path);
 		}
-		debug(`fileExists(${path}) => ${ret}`);
+		log(`fileExists(${path}) => ${ret}`, "debug");
 		return ret;
 	}
 
 	public readDirectory(path: string, extensions?: ReadonlyArray<string>, exclude?: ReadonlyArray<string>, include?: ReadonlyArray<string>, depth?: number): string[] {
-		debug(`readDirectory(
+		log(`readDirectory(
 	${path},
 	${extensions ? JSON.stringify(extensions) : "null"},
 	${exclude ? JSON.stringify(exclude) : "null"},
 	${include ? JSON.stringify(include) : "null"},
 	${depth},
-`);
+`, "debug");
 		return ts.sys.readDirectory(path, extensions, exclude, include, depth);
 	}
 
 	public getDirectories(directoryName: string): string[] {
-		debug(`getDirectories(${directoryName})`);
+		log(`getDirectories(${directoryName})`, "debug");
 
 		// typings should be loaded from the virtual fs or we get problems
 		if (directoryName.indexOf("node_modules/@types") > -1) {
@@ -106,7 +104,7 @@ export class InMemoryServiceHost implements ts.LanguageServiceHost {
 }
 
 // 	public resolveModuleNames(moduleNames: string[], containingFile: string, reusedNames?: string[]): ts.ResolvedModule[] {
-// 		debug(`resolveModuleNames(
+// 		log(`resolveModuleNames(
 // 	${JSON.stringify(moduleNames)},
 // 	${containingFile},
 // 	${reusedNames ? JSON.stringify(reusedNames) : "null"}
@@ -118,7 +116,7 @@ export class InMemoryServiceHost implements ts.LanguageServiceHost {
 // 		const ret = typeDirectiveNames.map(
 // 			t => resolveTypings(`@types/${t}/index.d.ts`),
 // 		);
-// 		debug(`resolveTypeReferenceDirectives(
+// 		log(`resolveTypeReferenceDirectives(
 // 	${JSON.stringify(typeDirectiveNames)},
 // 	${containingFile}
 // ) => ${JSON.stringify(ret)}`);

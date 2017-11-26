@@ -1,4 +1,5 @@
 import * as ts from "typescript";
+import { log, LoggerFunction, setCustomLogger } from "./logger";
 import { InMemoryServiceHost } from "./service-host";
 import { CompileResult, Diagnostic, repeatString, resolveLib, resolveTypings } from "./util";
 import { VirtualFileSystem } from "./virtual-fs";
@@ -9,7 +10,13 @@ export class Server {
 	private fs: VirtualFileSystem;
 	private host: InMemoryServiceHost;
 
-	constructor(private options?: ts.CompilerOptions) {
+	constructor(
+		private options?: ts.CompilerOptions,
+		customLogger?: LoggerFunction,
+	) {
+
+		if (customLogger != null) setCustomLogger(customLogger);
+
 		// set default compiler options
 		this.options = this.options || {};
 		if (this.options.noEmitOnError == null) this.options.noEmitOnError = true;

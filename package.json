@@ -1,6 +1,6 @@
 {
   "name": "virtual-tsc",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Provides means to compile TypeScript code in memory",
   "main": "build/index.js",
   "types": "./build/index.d.ts",
@@ -34,15 +34,17 @@
     "debug": "^3.1.0"
   },
   "devDependencies": {
-    "@types/node": "^8.0.34",
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.43",
-    "tslint": "^5.7.0",
+    "@types/node": "^8.0.34",
+    "@types/sinon": "^4.0.0",
     "chai": "^4.1.2",
     "mocha": "^4.0.0",
     "nyc": "^11.2.1",
+    "sinon": "^4.1.2",
     "source-map-support": "^0.5.0",
     "ts-node": "^3.3.0",
+    "tslint": "^5.7.0",
     "typescript": "^2.5.3"
   },
   "nyc": {

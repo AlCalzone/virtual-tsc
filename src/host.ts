@@ -1,10 +1,8 @@
-import * as debugPackage from "debug";
 import * as nodePath from "path";
 import * as ts from "typescript";
-import { VirtualFileSystem } from "./virtual-fs";
+import { log } from "./logger";
 import { resolveTypings } from "./util";
-
-const debug = debugPackage("virtual-tsc");
+import { VirtualFileSystem } from "./virtual-fs";
 
 // reference: https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#customizing-module-resolution
 
@@ -23,67 +21,67 @@ export class InMemoryHost implements ts.CompilerHost {
 	public getSourceFile(fileName: string, languageVersion: ts.ScriptTarget, onError?: (message: string) => void): ts.SourceFile {
 		let fileContent: string;
 		if (this.fs.fileExists(fileName)) {
-			debug(`getSourceFile(fileName="${fileName}", version=${languageVersion}) => returning provided file`);
+			log(`getSourceFile(fileName="${fileName}", version=${languageVersion}) => returning provided file`, "debug");
 			fileContent = this.fs.readFile(fileName);
 		} else if (/^lib\..*?d\.ts$/.test(fileName)) {
 			// resolving lib file
 			const libPath = nodePath.join(nodePath.dirname(require.resolve("typescript")), fileName);
-			debug(`getSourceFile(fileName="${fileName}") => resolved lib file ${libPath}`);
+			log(`getSourceFile(fileName="${fileName}") => resolved lib file ${libPath}`, "debug");
 			fileContent = ts.sys.readFile(libPath);
 			if (fileContent != null) this.fs.writeFile(fileName, fileContent, true);
 		} else if (/\@types\/.+$/.test(fileName)) {
 			// resolving a specific node module
-			debug(`getSourceFile(fileName="${fileName}") => resolving typings`);
+			log(`getSourceFile(fileName="${fileName}") => resolving typings`, "debug");
 			fileName = resolveTypings(fileName);
 			fileContent = ts.sys.readFile(fileName);
 			if (fileContent != null) this.fs.writeFile(fileName, fileContent, true);
 		}
 		if (fileContent != null) {
-			debug("file content is not null");
+			log("file content is not null", "debug");
 			return ts.createSourceFile(fileName, this.fs.readFile(fileName), languageVersion);
 		} else {
-			debug("file content is null");
+			log("file content is null", "debug");
 		}
 	}
 
 	public getDefaultLibFileName(options: ts.CompilerOptions): string {
 		options = options || this.options;
-		debug(`getDefaultLibFileName(${JSON.stringify(options, null, 4)})`);
+		log(`getDefaultLibFileName(${JSON.stringify(options, null, 4)})`, "debug");
 		return "lib.d.ts";
 	}
 
 	public writeFile(path: string, content: string) {
-		debug(`writeFile(path="${path}")`);
+		log(`writeFile(path="${path}")`, "debug");
 		this.fs.writeFile(path, content, true);
 	}
 
 	public getCurrentDirectory(): string {
 		const ret = ts.sys.getCurrentDirectory();
-		debug(`getCurrentDirectory() => ${ret}`);
+		log(`getCurrentDirectory() => ${ret}`, "debug");
 		return ret;
 	}
 
 	public getDirectories(path: string): string[] {
-		debug(`getDirectories(${path})`);
+		log(`getDirectories(${path})`, "debug");
 		throw new Error("Method not implemented.");
 	}
 
 	public getCanonicalFileName(fileName: string): string {
-		debug(`getCanonicalFileName(${fileName})`);
+		log(`getCanonicalFileName(${fileName})`, "debug");
 		return ts.sys.useCaseSensitiveFileNames ? fileName : fileName.toLowerCase();
 	}
 
 	public useCaseSensitiveFileNames(): boolean {
-		debug(`useCaseSensitiveFileNames()`);
+		log(`useCaseSensitiveFileNames()`, "debug");
 		return ts.sys.useCaseSensitiveFileNames;
 	}
 	public getNewLine(): string {
-		debug(`getNewLine()`);
+		log(`getNewLine()`, "debug");
 		return ts.sys.newLine;
 	}
 
 	// public resolveModuleNames?(moduleNames: string[], containingFile: string): ts.ResolvedModule[] {
-	// 	debug(`resolveModuleNames(${moduleNames})`);
+	// 	log(`resolveModuleNames(${moduleNames})`);
 	// 	return moduleNames.map(moduleName => {
 	// 		{ // try to use standard resolution
 	// 			const result = ts.resolveModuleName(
@@ -100,7 +98,7 @@ export class InMemoryHost implements ts.CompilerHost {
 	// 		try { // fall back to NodeJS resolution
 	// 			const fileName = require.resolve(moduleName);
 	// 			if (fileName === moduleName) return; // internal module
-	// 			debug(`resolved ${moduleName} => ${fileName}`);
+	// 			log(`resolved ${moduleName} => ${fileName}`);
 	// 			return {
 	// 				resolvedFileName: fileName,
 	// 			} as ts.ResolvedModule;
@@ -111,11 +109,11 @@ export class InMemoryHost implements ts.CompilerHost {
 	// }
 
 	public fileExists(fileName: string): boolean {
-		debug(`fileExists(${fileName})`);
+		log(`fileExists(${fileName})`, "debug");
 		return this.fs.fileExists(fileName);
 	}
 	public readFile(fileName: string): string {
-		debug(`readFile(${fileName})`);
+		log(`readFile(${fileName})`, "debug");
 		return this.fs.readFile(fileName);
 	}
 

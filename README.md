@@ -83,6 +83,9 @@ ERROR: Type '1' is not assignable to type 'string'.
 
 ## Changelog
 
+#### 0.3.4 (2017-11-26)
+* (AlCalzone) Added a custom logger output
+
 #### 0.3.3 (2017-11-14)
 * (AlCalzone) Fixed lib resolution for the LanguageServiceAPI
 

@@ -1,5 +1,4 @@
-import * as debugPackage from "debug";
-const debug = debugPackage("virtual-tsc");
+import { log } from "./logger";
 
 interface File {
 	content: string;
@@ -78,13 +77,13 @@ export class VirtualFileSystem {
 	}
 
 	public getDirectories(root: string): string[] {
-		debug(`fs.getDirectories(${root})`);
+		log(`fs.getDirectories(${root})`, "debug");
 		let paths = this.getFilenames();
-		debug(`fs.getDirectories => paths = ${paths}`);
+		log(`fs.getDirectories => paths = ${paths}`, "debug");
 		paths = paths.filter(p => p.startsWith(root));
-		debug(`fs.getDirectories => paths = ${paths}`);
+		log(`fs.getDirectories => paths = ${paths}`, "debug");
 		paths = paths.map(p => p.substr(root.length + 1).split("/")[0]);
-		debug(`fs.getDirectories => paths = ${paths}`);
+		log(`fs.getDirectories => paths = ${paths}`, "debug");
 		return paths;
 	}
 
