@@ -18,21 +18,23 @@ export function compileAsync(script: string, compilerOptions?: ts.CompilerOption
 	});
 }
 
-export function compile(script: string, compilerOptions?: ts.CompilerOptions, declarations: {[filename: string]: string} = {}): CompileResult {
+export function compile(script: string, compilerOptions?: ts.CompilerOptions, ambientDeclarations: {[filename: string]: string} = {}): CompileResult {
 	const sourceLines = script.split("\n");
 
 	// set default compiler options
 	compilerOptions = compilerOptions || {};
 	if (compilerOptions.noEmitOnError == null) compilerOptions.noEmitOnError = true;
+	// emit declarations if possible
+	if (compilerOptions.declaration == null) compilerOptions.declaration = true;
 	compilerOptions.moduleResolution = ts.ModuleResolutionKind.NodeJs;
 
 	// provide the source file in the virtual fs
 	const fs = new VirtualFileSystem();
 	fs.writeFile(SCRIPT_FILENAME, script);
 	// provide all ambient declaration files
-	for (const ambientFile of Object.keys(declarations)) {
+	for (const ambientFile of Object.keys(ambientDeclarations)) {
 		if (!/\.d\.ts$/.test(ambientFile)) throw new Error("Declarations must be .d.ts-files");
-		fs.writeFile(ambientFile, declarations[ambientFile], true);
+		fs.writeFile(ambientFile, ambientDeclarations[ambientFile], true);
 	}
 
 	// create the virtual host
@@ -40,7 +42,7 @@ export function compile(script: string, compilerOptions?: ts.CompilerOptions, de
 	// create the compiler and provide nodejs typings
 	const allFiles = [
 		"@types/node/index.d.ts",
-		...Object.keys(declarations),
+		...Object.keys(ambientDeclarations),
 		SCRIPT_FILENAME,
 	];
 	const program = ts.createProgram(allFiles, compilerOptions, host);
@@ -78,11 +80,17 @@ ${type.toUpperCase()}: ${description}`;
 		&& compilerOptions.noEmitOnError
 	);
 	let result: string;
-	if (!hasError) result = fs.readFile(SCRIPT_FILENAME.replace(/ts.?$/, "js"));
+	const resultFilename = SCRIPT_FILENAME.replace(/ts$/, "js");
+
+	let declarations: string;
+	const declarationsFilename = SCRIPT_FILENAME.replace(/ts$/, "d.ts");
+	if (!hasError && fs.fileExists(resultFilename)) result = fs.readFile(resultFilename);
+	if (!hasError && fs.fileExists(declarationsFilename)) declarations = fs.readFile(declarationsFilename);
 
 	return {
 		success: !hasError,
-		diagnostics: diagnostics,
-		result: result,
+		diagnostics,
+		result,
+		declarations,
 	};
 }

@@ -24,6 +24,7 @@ export interface CompileResult {
 	success: boolean;
 	diagnostics: Diagnostic[];
 	result?: string;
+	declarations?: string;
 }
 
 export function startsWith(str: string, match: string): boolean {
