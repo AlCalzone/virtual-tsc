@@ -14,6 +14,9 @@ var Server = /** @class */ (function () {
         this.options = this.options || {};
         if (this.options.noEmitOnError == null)
             this.options.noEmitOnError = true;
+        // emit declarations if possible
+        if (this.options.declaration == null)
+            this.options.declaration = true;
         this.options.moduleResolution = ts.ModuleResolutionKind.NodeJs;
         // set up the build pipeline
         this.fs = new virtual_fs_1.VirtualFileSystem();
@@ -88,12 +91,20 @@ var Server = /** @class */ (function () {
         var hasError = ((!diagnostics.every(function (d) { return d.type !== "error"; }) || emitResult.emitSkipped)
             && this.options.noEmitOnError);
         var result;
-        if (!hasError)
-            result = emitResult.outputFiles[0].text;
+        var declarations;
+        if (!hasError) {
+            var resultFile = emitResult.outputFiles.find(function (f) { return f.name.endsWith(".js"); });
+            if (resultFile != null)
+                result = resultFile.text;
+            var declarationFile = emitResult.outputFiles.find(function (f) { return f.name.endsWith(".d.ts"); });
+            if (declarationFile != null)
+                declarations = declarationFile.text;
+        }
         return {
             success: !hasError,
             diagnostics: diagnostics,
             result: result,
+            declarations: declarations,
         };
     };
     return Server;

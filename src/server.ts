@@ -20,6 +20,8 @@ export class Server {
 		// set default compiler options
 		this.options = this.options || {};
 		if (this.options.noEmitOnError == null) this.options.noEmitOnError = true;
+		// emit declarations if possible
+		if (this.options.declaration == null) this.options.declaration = true;
 		this.options.moduleResolution = ts.ModuleResolutionKind.NodeJs;
 
 		// set up the build pipeline
@@ -51,7 +53,7 @@ export class Server {
 		}
 	}
 
-	public provideAmbientDeclarations(declarations: {[filename: string]: string} = {}) {
+	public provideAmbientDeclarations(declarations: { [filename: string]: string } = {}) {
 		// provide all ambient declaration files
 		for (const ambientFile of Object.keys(declarations)) {
 			if (!/\.d\.ts$/.test(ambientFile)) throw new Error("Declarations must be .d.ts-files");
@@ -99,12 +101,19 @@ ${type.toUpperCase()}: ${description}`;
 			&& this.options.noEmitOnError
 		);
 		let result: string;
-		if (!hasError) result = emitResult.outputFiles[0].text;
+		let declarations: string;
+		if (!hasError) {
+			const resultFile = emitResult.outputFiles.find(f => f.name.endsWith(".js"));
+			if (resultFile != null) result = resultFile.text;
+			const declarationFile = emitResult.outputFiles.find(f => f.name.endsWith(".d.ts"));
+			if (declarationFile != null) declarations = declarationFile.text;
+		}
 
 		return {
 			success: !hasError,
-			diagnostics: diagnostics,
-			result: result,
+			diagnostics,
+			result,
+			declarations,
 		};
 	}
 }
