@@ -16,6 +16,7 @@ export interface CompileResult {
     success: boolean;
     diagnostics: Diagnostic[];
     result?: string;
+    declarations?: string;
 }
 
 export interface Diagnostic {
@@ -82,6 +83,9 @@ ERROR: Type '1' is not assignable to type 'string'.
 ```
 
 ## Changelog
+
+#### 0.4.0 (2018-05-23)
+* (AlCalzone) Emit declaration files (*.d.ts), enabled by default
 
 #### 0.3.4 (2017-11-26)
 * (AlCalzone) Added a custom logger output

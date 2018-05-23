@@ -61,13 +61,13 @@ declare global {
 }`;
 		let result = compile(`log("this fails");`);
 		expect(result.success).to.be.false;
-		result = compile(`log("this succeeds");`, null, {"global.d.ts": ambient});
+		result = compile(`log("this succeeds");`, null, { "global.d.ts": ambient });
 		expect(result.success).to.be.true;
 
 	});
 
 	it("it should force ambient declarations to be .d.ts files", () => {
-		expect(() => compile("", null, {"global.ts": ""})).to.throw();
+		expect(() => compile("", null, { "global.ts": "" })).to.throw();
 	});
 
 	describe("performance check =>", () => {
@@ -78,8 +78,8 @@ declare global {
 			for (let i = 0; i < 5; i++) {
 				result = compile(
 					`const buf = Buffer.alloc(${i} + 1);
-					console.log(buf.length)`,
-					null, {"global.d.ts": ambient},
+console.log(buf.length)`,
+					null, { "global.d.ts": ambient },
 				);
 				expect(result.success).to.be.true;
 				// about 700ms per call
@@ -89,14 +89,15 @@ declare global {
 		it("service host", () => {
 			const tsserver = new Server(options);
 			const ambient = fs.readFileSync("./test/ioBroker.d.ts", "utf8");
-			tsserver.provideAmbientDeclarations({"global.d.ts": ambient});
+			tsserver.provideAmbientDeclarations({ "global.d.ts": ambient });
 			let result: CompileResult;
 			for (let i = 0; i < 5; i++) {
 				result = tsserver.compile("index.ts",
-				`const buf = Buffer.alloc(${i} + 1);
-				console.log(buf.length)`,
-			);
+					`const buf = Buffer.alloc(${i} + 1);
+console.log(buf.length)`,
+				);
 				expect(result.success).to.be.true;
+				expect(result.declarations).to.equal("declare const buf: Buffer;\r\n");
 				// about 4ms per call (after the 1st one)
 			}
 		});

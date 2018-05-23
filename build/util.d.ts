@@ -11,6 +11,7 @@ export interface CompileResult {
     success: boolean;
     diagnostics: Diagnostic[];
     result?: string;
+    declarations?: string;
 }
 export declare function startsWith(str: string, match: string): boolean;
 export declare function resolveTypings(typings: string): string;
