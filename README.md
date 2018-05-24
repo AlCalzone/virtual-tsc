@@ -84,6 +84,9 @@ ERROR: Type '1' is not assignable to type 'string'.
 
 ## Changelog
 
+#### 0.4.1 (2018-05-23)
+* (AlCalzone) Allow emitting only declaration files
+
 #### 0.4.0 (2018-05-23)
 * (AlCalzone) Emit declaration files (*.d.ts), enabled by default
 
