@@ -88,7 +88,8 @@ var Server = /** @class */ (function () {
             };
             var _b;
         });
-        var hasError = ((!diagnostics.every(function (d) { return d.type !== "error"; }) || emitResult.emitSkipped)
+        var hasError = ((!diagnostics.every(function (d) { return d.type !== "error"; }) ||
+            (emitResult.emitSkipped && !this.options.emitDeclarationOnly))
             && this.options.noEmitOnError);
         var result;
         var declarations;

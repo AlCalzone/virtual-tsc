@@ -97,7 +97,10 @@ ${type.toUpperCase()}: ${description}`;
 		});
 
 		const hasError = (
-			(!diagnostics.every(d => d.type !== "error") || emitResult.emitSkipped)
+			(
+				!diagnostics.every(d => d.type !== "error") ||
+				(emitResult.emitSkipped && !this.options.emitDeclarationOnly)
+			)
 			&& this.options.noEmitOnError
 		);
 		let result: string;
