@@ -1,7 +1,7 @@
+import * as nodeFS from "fs";
 import * as nodePath from "path";
 import * as ts from "typescript";
 import { log } from "./logger";
-
 export interface Diagnostic {
 	type: "error" | "warning" | "message";
 	lineNr: number;
@@ -65,4 +65,16 @@ export function resolveLib(libFile: string): string {
 	const libPath = require.resolve(`typescript/lib/${libFile}`);
 	log(`libPath = ${libPath}`, "debug");
 	if (ts.sys.fileExists(libPath)) return libPath;
+}
+
+export function enumLibFiles(): string[] {
+	log("util", "enumLibFiles() =>", "debug");
+	const tsPath = require.resolve("typescript");
+	const libFiles = nodeFS.readdirSync(nodePath.dirname(tsPath))
+		.filter(name => /^lib(\.[\w\d]+)*?\.d\.ts$/.test(name))
+		;
+	for (const file of libFiles) {
+		log("util", "  " + file, "debug");
+	}
+	return libFiles;
 }

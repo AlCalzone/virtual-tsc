@@ -24,7 +24,8 @@ var Server = /** @class */ (function () {
         this.service = ts.createLanguageService(this.host, ts.createDocumentRegistry());
         // provide the requested lib files
         if (!options.noLib) {
-            var libFiles = options.lib || [this.host.getDefaultLibFileName(options)];
+            // const libFiles = options.lib || [this.host.getDefaultLibFileName(options)];
+            var libFiles = util_1.enumLibFiles();
             for (var _i = 0, libFiles_1 = libFiles; _i < libFiles_1.length; _i++) {
                 var file = libFiles_1[_i];
                 var path = util_1.resolveLib(file);

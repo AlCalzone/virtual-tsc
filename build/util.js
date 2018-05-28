@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var nodeFS = require("fs");
 var nodePath = require("path");
 var ts = require("typescript");
 var logger_1 = require("./logger");
@@ -52,3 +53,15 @@ function resolveLib(libFile) {
         return libPath;
 }
 exports.resolveLib = resolveLib;
+function enumLibFiles() {
+    logger_1.log("util", "enumLibFiles() =>", "debug");
+    var tsPath = require.resolve("typescript");
+    var libFiles = nodeFS.readdirSync(nodePath.dirname(tsPath))
+        .filter(function (name) { return /^lib(\.[\w\d]+)*?\.d\.ts$/.test(name); });
+    for (var _i = 0, libFiles_1 = libFiles; _i < libFiles_1.length; _i++) {
+        var file = libFiles_1[_i];
+        logger_1.log("util", "  " + file, "debug");
+    }
+    return libFiles;
+}
+exports.enumLibFiles = enumLibFiles;
