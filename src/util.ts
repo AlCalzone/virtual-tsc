@@ -34,32 +34,35 @@ export function startsWith(str: string, match: string): boolean {
 	);
 }
 
+export function endsWith(str: string, match: string): boolean {
+	return (
+		str.length >= match.length &&
+		str.substr(-match.length) === match
+	);
+}
+
 export function resolveTypings(typings: string): string {
 	if (!startsWith(typings, "@types") || nodePath.isAbsolute(typings)) {
 		// this is an absolute path
 		typings = typings.substr(typings.indexOf("@types"));
 	}
 	log(`resolveTypings(${typings})`, "debug");
-	const pathParts = __dirname.split(nodePath.sep);
-	// start with / on linux
-	if (startsWith(__dirname, nodePath.sep)) pathParts.unshift(nodePath.sep);
-	// try all dirs up to the root
-	for (let i = 0; i < pathParts.length; i++) {
-		const path = nodePath.join(...(pathParts.slice(0, pathParts.length - i)), "node_modules", typings);
-		log(` => trying ${path}`, "debug");
-		if (ts.sys.fileExists(path)) {
-			log(" => success", "debug");
-			return path;
-		}
+	if (!endsWith(typings, ".d.ts")) {
+		typings = nodePath.join(typings, "index.d.ts");
 	}
-	log(" => no success", "debug");
-	return null;
+	try {
+		const ret = require.resolve(typings);
+		log(" => " + ret, "debug");
+		return ret;
+	} catch (e) {
+		log(" => no success: " + e, "debug");
+		return null;
+	}
 }
 
 export function resolveLib(libFile: string): string {
 	log(`resolving lib file ${libFile}`, "debug");
-	// resolving lib file
-	const libPath = nodePath.join(nodePath.dirname(require.resolve("typescript")), libFile);
+	const libPath = require.resolve(`typescript/lib/${libFile}`);
 	log(`libPath = ${libPath}`, "debug");
 	if (ts.sys.fileExists(libPath)) return libPath;
 }
