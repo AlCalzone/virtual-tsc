@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var nodePath = require("path");
 var ts = require("typescript");
 var logger_1 = require("./logger");
 var service_host_1 = require("./service-host");
@@ -12,8 +13,8 @@ var Server = /** @class */ (function () {
             logger_1.setCustomLogger(customLogger);
         // set default compiler options
         this.options = this.options || {};
-        if (this.options.noEmitOnError == null)
-            this.options.noEmitOnError = true;
+        // TODO: We would like this to be true, but there's a bit performance hit
+        /* if (this.options.noEmitOnError == null) */ this.options.noEmitOnError = false;
         // emit declarations if possible
         if (this.options.declaration == null)
             this.options.declaration = true;
@@ -24,16 +25,12 @@ var Server = /** @class */ (function () {
         this.service = ts.createLanguageService(this.host, ts.createDocumentRegistry());
         // provide the requested lib files
         if (!options.noLib) {
-            // const libFiles = options.lib || [this.host.getDefaultLibFileName(options)];
             var libFiles = util_1.enumLibFiles();
             for (var _i = 0, libFiles_1 = libFiles; _i < libFiles_1.length; _i++) {
                 var file = libFiles_1[_i];
-                var path = util_1.resolveLib(file);
-                if (path == null)
-                    continue;
-                var fileContent = ts.sys.readFile(path);
+                var fileContent = ts.sys.readFile(file);
                 if (fileContent != null)
-                    this.fs.writeFile(file, fileContent, true);
+                    this.fs.writeFile(nodePath.basename(file), fileContent, true);
             }
         }
         // provide the most basic typings

@@ -57,7 +57,8 @@ function enumLibFiles() {
     logger_1.log("util", "enumLibFiles() =>", "debug");
     var tsPath = require.resolve("typescript");
     var libFiles = nodeFS.readdirSync(nodePath.dirname(tsPath))
-        .filter(function (name) { return /^lib(\.[\w\d]+)*?\.d\.ts$/.test(name); });
+        .filter(function (name) { return /^lib(\.[\w\d]+)*?\.d\.ts$/.test(name); })
+        .map(function (file) { return nodePath.join(nodePath.dirname(tsPath), file); });
     for (var _i = 0, libFiles_1 = libFiles; _i < libFiles_1.length; _i++) {
         var file = libFiles_1[_i];
         logger_1.log("util", "  " + file, "debug");
