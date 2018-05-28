@@ -1,21 +1,32 @@
-const { compile } = require("../");
+const { Server } = require("../");
 const ts = require("typescript");
 
 const sourceCode = `
-function foo(): void { }
+function foo() { }
+if ( 
+	;
+foo();
+function bar() {return "foo"}
 `
 
 /** @type {ts.CompilerOptions} */
 const compilerOptions = {
-	declaration: true,
+	emitDeclarationOnly: true,
+	noEmitOnError: false,
+	noImplicitAny: false,
+	strict: false,
+	//emitDeclarationOnly: true,
+	// allowJs: true,
+	// checkJs: true,
+	// allowNonTsExtensions: true,
 };
 
-const result = compile(
-	sourceCode, 
-	compilerOptions, 
-);
+const compiler = new Server(compilerOptions);
 
-console.log(result.result.toString());
-console.log();
-console.log(result.declarations.toString());
+const result = compiler.compile("foo.ts", sourceCode);
+
+console.dir(result);
+//console.log(result.result.toString());
+//console.log();
+//console.log(result.declarations.toString());
 

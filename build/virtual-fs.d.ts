@@ -10,7 +10,7 @@ export declare class VirtualFileSystem {
      * Checks if a file exists in the virtual FS
      * @param filename The path of the file to look for
      */
-    fileExists(filename: string): boolean;
+    fileExists(filename: string, suppressLog?: boolean): boolean;
     /**
      * Deletes a file in the virtual FS. If the file doesn't exist, nothing happens.
      * @param filename The path of the file to look for

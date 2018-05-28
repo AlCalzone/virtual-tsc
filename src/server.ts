@@ -1,7 +1,7 @@
 import * as ts from "typescript";
 import { log, LoggerFunction, setCustomLogger } from "./logger";
 import { InMemoryServiceHost } from "./service-host";
-import { CompileResult, Diagnostic, repeatString, resolveLib, resolveTypings } from "./util";
+import { CompileResult, Diagnostic, enumLibFiles, repeatString, resolveLib, resolveTypings } from "./util";
 import { VirtualFileSystem } from "./virtual-fs";
 
 export class Server {
@@ -31,7 +31,8 @@ export class Server {
 
 		// provide the requested lib files
 		if (!options.noLib) {
-			const libFiles = options.lib || [this.host.getDefaultLibFileName(options)];
+			// const libFiles = options.lib || [this.host.getDefaultLibFileName(options)];
+			const libFiles = enumLibFiles();
 			for (const file of libFiles) {
 				const path = resolveLib(file);
 				if (path == null) continue;
