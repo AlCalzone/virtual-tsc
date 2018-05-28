@@ -36,15 +36,6 @@ var InMemoryServiceHost = /** @class */ (function () {
         logger_1.log("getDefaultLibFileName(" + JSON.stringify(options, null, 4) + ")", "debug");
         return "lib.d.ts";
     };
-    // log?(s: string): void {
-    // 	throw new Error("Method not implemented.");
-    // }
-    // trace?(s: string): void {
-    // 	throw new Error("Method not implemented.");
-    // }
-    // error?(s: string): void {
-    // 	throw new Error("Method not implemented.");
-    // }
     InMemoryServiceHost.prototype.readFile = function (path, encoding) {
         logger_1.log("readFile(" + path + ")", "debug");
         if (this.fs.fileExists(path)) {
@@ -86,3 +77,86 @@ var InMemoryServiceHost = /** @class */ (function () {
     return InMemoryServiceHost;
 }());
 exports.InMemoryServiceHost = InMemoryServiceHost;
+// tslint:disable-next-line:max-classes-per-file
+var InMemoryWatcherHost = /** @class */ (function () {
+    function InMemoryWatcherHost(createProgram, fs, options) {
+        this.createProgram = createProgram;
+        this.fs = fs;
+        this.options = options;
+    }
+    InMemoryWatcherHost.prototype.afterProgramCreate = function (program) {
+        logger_1.log("host", "afterProgramCreate()", "debug");
+        // throw new Error("afterProgramCreate not implemented.");
+    };
+    InMemoryWatcherHost.prototype.onWatchStatusChange = function (diagnostic, newLine, options) {
+        logger_1.log("host", "onWatchStatusChange()", "debug");
+        // throw new Error("Method not implemented.");
+    };
+    InMemoryWatcherHost.prototype.useCaseSensitiveFileNames = function () {
+        return ts.sys.useCaseSensitiveFileNames;
+    };
+    InMemoryWatcherHost.prototype.getNewLine = function () {
+        return ts.sys.newLine;
+    };
+    InMemoryWatcherHost.prototype.getCurrentDirectory = function () {
+        // return CWD;
+        return ts.sys.getCurrentDirectory();
+    };
+    InMemoryWatcherHost.prototype.getDefaultLibFileName = function (options) {
+        logger_1.log("getDefaultLibFileName(" + JSON.stringify(options, null, 4) + ")", "debug");
+        return "lib.d.ts";
+    };
+    InMemoryWatcherHost.prototype.fileExists = function (path) {
+        logger_1.log("fileExists(" + path + ")", "debug");
+        var ret;
+        if (this.fs.fileExists(path)) {
+            ret = true;
+        }
+        else if (path.indexOf("node_modules") > -1) {
+            ret = ts.sys.fileExists(path);
+        }
+        logger_1.log("fileExists(" + path + ") => " + ret, "debug");
+        return ret;
+    };
+    InMemoryWatcherHost.prototype.readFile = function (path, encoding) {
+        logger_1.log("readFile(" + path + ")", "debug");
+        if (this.fs.fileExists(path)) {
+            return this.fs.readFile(path);
+        }
+        else if (path.indexOf("node_modules") > -1) {
+            return ts.sys.readFile(path);
+        }
+    };
+    InMemoryWatcherHost.prototype.getDirectories = function (directoryName) {
+        logger_1.log("getDirectories(" + directoryName + ")", "debug");
+        // typings should be loaded from the virtual fs or we get problems
+        if (directoryName.indexOf("node_modules/@types") > -1) {
+            return [];
+        }
+        try {
+            return ts.sys.getDirectories(directoryName);
+        }
+        catch (e) {
+            return [];
+        }
+    };
+    InMemoryWatcherHost.prototype.writeFile = function (path, data) {
+        this.fs.writeFile(path, data, true);
+    };
+    InMemoryWatcherHost.prototype.watchFile = function (path, callback, pollingInterval) {
+        logger_1.log("host", "watchFile(path: " + path + ", ...)", "debug");
+        // throw new Error("Method not implemented.");
+        return {
+            close: function () { return void 0; },
+        };
+    };
+    InMemoryWatcherHost.prototype.watchDirectory = function (path, callback, recursive) {
+        logger_1.log("host", "watchDirectory(path: " + path + ", , recursive: " + recursive + "...)", "debug");
+        // throw new Error("Method not implemented.");
+        return {
+            close: function () { return void 0; },
+        };
+    };
+    return InMemoryWatcherHost;
+}());
+exports.InMemoryWatcherHost = InMemoryWatcherHost;

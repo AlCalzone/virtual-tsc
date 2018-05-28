@@ -1,6 +1,6 @@
 import * as ts from "typescript";
 import { log, LoggerFunction, setCustomLogger } from "./logger";
-import { InMemoryServiceHost } from "./service-host";
+import { InMemoryServiceHost, InMemoryWatcherHost } from "./service-host";
 import { CompileResult, Diagnostic, enumLibFiles, repeatString, resolveLib, resolveTypings } from "./util";
 import { VirtualFileSystem } from "./virtual-fs";
 
@@ -8,7 +8,7 @@ export class Server {
 
 	private service: ts.LanguageService;
 	private fs: VirtualFileSystem;
-	private host: InMemoryServiceHost;
+	private host: InMemoryWatcherHost;
 
 	constructor(
 		private options?: ts.CompilerOptions,
@@ -26,8 +26,10 @@ export class Server {
 
 		// set up the build pipeline
 		this.fs = new VirtualFileSystem();
-		this.host = new InMemoryServiceHost(this.fs, this.options);
-		this.service = ts.createLanguageService(this.host, ts.createDocumentRegistry());
+		const createProgram = ts.createEmitAndSemanticDiagnosticsBuilderProgram;
+		// this.host = new InMemoryServiceHost(this.fs, this.options);
+		this.host = new InMemoryWatcherHost(createProgram, this.fs, this.options);
+		// this.service = ts.createLanguageService(this.host, ts.createDocumentRegistry());
 
 		// provide the requested lib files
 		if (!options.noLib) {
@@ -66,58 +68,63 @@ export class Server {
 		const sourceLines = scriptContent.split("\n");
 		this.fs.writeFile(filename, scriptContent, true);
 
-		const rawDiagnostics: ts.Diagnostic[] = [];
-		rawDiagnostics.push(...this.service.getSyntacticDiagnostics(filename));
-		rawDiagnostics.push(...this.service.getSemanticDiagnostics(filename));
+		this.host.rootFiles = [filename];
+		ts.createWatchProgram(this.host);
 
-		const emitResult = this.service.getEmitOutput(filename);
+		return undefined;
 
-		rawDiagnostics.push(...this.service.getCompilerOptionsDiagnostics());
+// 		const rawDiagnostics: ts.Diagnostic[] = [];
+// 		rawDiagnostics.push(...this.service.getSyntacticDiagnostics(filename));
+// 		rawDiagnostics.push(...this.service.getSemanticDiagnostics(filename));
 
-		const diagnostics = rawDiagnostics.map(diagnostic => {
-			let lineNr = 0;
-			let charNr = 0;
-			if (diagnostic.file != null) {
-				const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-				[lineNr, charNr] = [line, character];
-			}
-			const description = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
-			const type = ts.DiagnosticCategory[diagnostic.category].toLowerCase() as "error" | "warning" | "message";
-			const sourceLine = sourceLines[lineNr];
-			const annotatedSource = `${sourceLine}
-${repeatString(" ", charNr)}^
-${type.toUpperCase()}: ${description}`;
-			return {
-				type,
-				lineNr: lineNr + 1,
-				charNr: charNr + 1,
-				sourceLine,
-				description,
-				annotatedSource,
-			} as Diagnostic;
-		});
+// 		const emitResult = this.service.getEmitOutput(filename);
 
-		const hasError = (
-			(
-				!diagnostics.every(d => d.type !== "error") ||
-				(emitResult.emitSkipped && !this.options.emitDeclarationOnly)
-			)
-			&& this.options.noEmitOnError
-		);
-		let result: string;
-		let declarations: string;
-		if (!hasError) {
-			const resultFile = emitResult.outputFiles.find(f => f.name.endsWith(".js"));
-			if (resultFile != null) result = resultFile.text;
-			const declarationFile = emitResult.outputFiles.find(f => f.name.endsWith(".d.ts"));
-			if (declarationFile != null) declarations = declarationFile.text;
-		}
+// 		rawDiagnostics.push(...this.service.getCompilerOptionsDiagnostics());
 
-		return {
-			success: !hasError,
-			diagnostics,
-			result,
-			declarations,
-		};
+// 		const diagnostics = rawDiagnostics.map(diagnostic => {
+// 			let lineNr = 0;
+// 			let charNr = 0;
+// 			if (diagnostic.file != null) {
+// 				const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+// 				[lineNr, charNr] = [line, character];
+// 			}
+// 			const description = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
+// 			const type = ts.DiagnosticCategory[diagnostic.category].toLowerCase() as "error" | "warning" | "message";
+// 			const sourceLine = sourceLines[lineNr];
+// 			const annotatedSource = `${sourceLine}
+// ${repeatString(" ", charNr)}^
+// ${type.toUpperCase()}: ${description}`;
+// 			return {
+// 				type,
+// 				lineNr: lineNr + 1,
+// 				charNr: charNr + 1,
+// 				sourceLine,
+// 				description,
+// 				annotatedSource,
+// 			} as Diagnostic;
+// 		});
+
+// 		const hasError = (
+// 			(
+// 				!diagnostics.every(d => d.type !== "error") ||
+// 				(emitResult.emitSkipped && !this.options.emitDeclarationOnly)
+// 			)
+// 			&& this.options.noEmitOnError
+// 		);
+// 		let result: string;
+// 		let declarations: string;
+// 		if (!hasError) {
+// 			const resultFile = emitResult.outputFiles.find(f => f.name.endsWith(".js"));
+// 			if (resultFile != null) result = resultFile.text;
+// 			const declarationFile = emitResult.outputFiles.find(f => f.name.endsWith(".d.ts"));
+// 			if (declarationFile != null) declarations = declarationFile.text;
+// 		}
+
+// 		return {
+// 			success: !hasError,
+// 			diagnostics,
+// 			result,
+// 			declarations,
+// 		};
 	}
 }

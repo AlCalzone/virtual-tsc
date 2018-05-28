@@ -25,7 +25,7 @@ export class InMemoryServiceHost implements ts.LanguageServiceHost {
 		return this.fs
 			.getFilenames()
 			.filter(f => f.endsWith(".ts") /* && !f.endsWith(".d.ts") */)
-		;
+			;
 	}
 
 	public getScriptVersion(fileName: string): string {
@@ -47,15 +47,6 @@ export class InMemoryServiceHost implements ts.LanguageServiceHost {
 		log(`getDefaultLibFileName(${JSON.stringify(options, null, 4)})`, "debug");
 		return "lib.d.ts";
 	}
-	// log?(s: string): void {
-	// 	throw new Error("Method not implemented.");
-	// }
-	// trace?(s: string): void {
-	// 	throw new Error("Method not implemented.");
-	// }
-	// error?(s: string): void {
-	// 	throw new Error("Method not implemented.");
-	// }
 
 	public readFile(path: string, encoding?: string): string {
 		log(`readFile(${path})`, "debug");
@@ -101,30 +92,97 @@ export class InMemoryServiceHost implements ts.LanguageServiceHost {
 		} catch (e) {
 			return [];
 		}
+	}
+
 }
 
-// 	public resolveModuleNames(moduleNames: string[], containingFile: string, reusedNames?: string[]): ts.ResolvedModule[] {
-// 		log(`resolveModuleNames(
-// 	${JSON.stringify(moduleNames)},
-// 	${containingFile},
-// 	${reusedNames ? JSON.stringify(reusedNames) : "null"}
-// `);
-// 		throw new Error("Method not implemented.");
-// 	}
+// tslint:disable-next-line:max-classes-per-file
+export class InMemoryWatcherHost implements ts.WatchCompilerHostOfFilesAndCompilerOptions<ts.EmitAndSemanticDiagnosticsBuilderProgram> {
 
-// 	public resolveTypeReferenceDirectives?(typeDirectiveNames: string[], containingFile: string): ts.ResolvedTypeReferenceDirective[] {
-// 		const ret = typeDirectiveNames.map(
-// 			t => resolveTypings(`@types/${t}/index.d.ts`),
-// 		);
-// 		log(`resolveTypeReferenceDirectives(
-// 	${JSON.stringify(typeDirectiveNames)},
-// 	${containingFile}
-// ) => ${JSON.stringify(ret)}`);
+	constructor(
+		public createProgram: ts.CreateProgram<ts.EmitAndSemanticDiagnosticsBuilderProgram>,
+		private fs: VirtualFileSystem,
+		public options: ts.CompilerOptions,
+	) {
+	}
 
-// 		return ret.map(f => ({
-// 			primary: true,
-// 			resolvedFileName: f,
-// 		}));
-// 	}
+	public rootFiles: string[];
+
+	public afterProgramCreate(program: ts.EmitAndSemanticDiagnosticsBuilderProgram): void {
+		log("host", `afterProgramCreate()`, "debug");
+		// throw new Error("afterProgramCreate not implemented.");
+	}
+	public onWatchStatusChange(diagnostic: ts.Diagnostic, newLine: string, options: ts.CompilerOptions): void {
+		log("host", `onWatchStatusChange()`, "debug");
+		// throw new Error("Method not implemented.");
+	}
+	public useCaseSensitiveFileNames(): boolean {
+		return ts.sys.useCaseSensitiveFileNames;
+	}
+	public getNewLine(): string {
+		return ts.sys.newLine;
+	}
+	public getCurrentDirectory(): string {
+		// return CWD;
+		return ts.sys.getCurrentDirectory();
+	}
+	public getDefaultLibFileName(options: ts.CompilerOptions): string {
+		log(`getDefaultLibFileName(${JSON.stringify(options, null, 4)})`, "debug");
+		return "lib.d.ts";
+	}
+
+	public fileExists(path: string): boolean {
+		log(`fileExists(${path})`, "debug");
+		let ret: boolean;
+		if (this.fs.fileExists(path)) {
+			ret = true;
+		} else if (path.indexOf("node_modules") > -1) {
+			ret = ts.sys.fileExists(path);
+		}
+		log(`fileExists(${path}) => ${ret}`, "debug");
+		return ret;
+	}
+	public readFile(path: string, encoding?: string): string {
+		log(`readFile(${path})`, "debug");
+		if (this.fs.fileExists(path)) {
+			return this.fs.readFile(path);
+		} else if (path.indexOf("node_modules") > -1) {
+			return ts.sys.readFile(path);
+		}
+	}
+
+	public getDirectories(directoryName: string): string[] {
+		log(`getDirectories(${directoryName})`, "debug");
+
+		// typings should be loaded from the virtual fs or we get problems
+		if (directoryName.indexOf("node_modules/@types") > -1) {
+			return [];
+		}
+
+		try {
+			return ts.sys.getDirectories(directoryName);
+		} catch (e) {
+			return [];
+		}
+	}
+
+	public writeFile(path: string, data: string) {
+		this.fs.writeFile(path, data, true);
+	}
+
+	public watchFile(path: string, callback: ts.FileWatcherCallback, pollingInterval?: number): ts.FileWatcher {
+		log("host", `watchFile(path: ${path}, ...)`, "debug");
+		// throw new Error("Method not implemented.");
+		return {
+			close: () => void 0,
+		};
+	}
+	public watchDirectory(path: string, callback: ts.DirectoryWatcherCallback, recursive?: boolean): ts.FileWatcher {
+		log("host", `watchDirectory(path: ${path}, , recursive: ${recursive}...)`, "debug");
+		// throw new Error("Method not implemented.");
+		return {
+			close: () => void 0,
+		};
+	}
 
 }
