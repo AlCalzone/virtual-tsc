@@ -9,15 +9,9 @@ import { Server } from "./server";
 // tslint:disable:no-eval
 
 const options = {
-	// for now allow failed compilation
-	// remove this line when we have an ambient declaration
-	// for the script adapter
-	// noEmitOnError: false,
-	// change this to "es6" if we're dropping support for NodeJS 4.x
+	// noEmitOnError: true has a big performance hit
+	noEmitOnError: false,
 	target: ts.ScriptTarget.ES2015,
-	// we need this for the native promise support in NodeJS 4.x
-	lib: ["lib.es2015.d.ts"],
-	watch: true,
 };
 
 describe("compiler => ", function() {

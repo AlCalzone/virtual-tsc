@@ -72,6 +72,7 @@ export function enumLibFiles(): string[] {
 	const tsPath = require.resolve("typescript");
 	const libFiles = nodeFS.readdirSync(nodePath.dirname(tsPath))
 		.filter(name => /^lib(\.[\w\d]+)*?\.d\.ts$/.test(name))
+		.map(file => nodePath.join(nodePath.dirname(tsPath), file))
 		;
 	for (const file of libFiles) {
 		log("util", "  " + file, "debug");

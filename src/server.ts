@@ -1,3 +1,4 @@
+import * as nodePath from "path";
 import * as ts from "typescript";
 import { log, LoggerFunction, setCustomLogger } from "./logger";
 import { InMemoryServiceHost } from "./service-host";
@@ -19,7 +20,8 @@ export class Server {
 
 		// set default compiler options
 		this.options = this.options || {};
-		if (this.options.noEmitOnError == null) this.options.noEmitOnError = true;
+		// TODO: We would like this to be true, but there's a bit performance hit
+		/* if (this.options.noEmitOnError == null) */ this.options.noEmitOnError = false;
 		// emit declarations if possible
 		if (this.options.declaration == null) this.options.declaration = true;
 		this.options.moduleResolution = ts.ModuleResolutionKind.NodeJs;
@@ -31,13 +33,10 @@ export class Server {
 
 		// provide the requested lib files
 		if (!options.noLib) {
-			// const libFiles = options.lib || [this.host.getDefaultLibFileName(options)];
 			const libFiles = enumLibFiles();
 			for (const file of libFiles) {
-				const path = resolveLib(file);
-				if (path == null) continue;
-				const fileContent = ts.sys.readFile(path);
-				if (fileContent != null) this.fs.writeFile(file, fileContent, true);
+				const fileContent = ts.sys.readFile(file);
+				if (fileContent != null) this.fs.writeFile(nodePath.basename(file), fileContent, true);
 			}
 		}
 
