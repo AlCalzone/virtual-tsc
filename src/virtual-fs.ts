@@ -14,11 +14,15 @@ export class VirtualFileSystem {
 	 * @param overwrite If existing files should be overwritten
 	 */
 	public writeFile(filename: string, content: string, overwrite: boolean = false): void {
-		if (!overwrite && this.fileExists(filename)) {
+		log("vfs", `writeFile(filename: "${filename}", content: length ${content ? content.length : 0}, overwrite: ${overwrite}`, "debug");
+
+		const exists = this.fileExists(filename, true);
+		if (!overwrite && exists) {
 			throw new Error(`The file ${filename} already exists. Set overwrite to true if you want to override it`);
 		}
 
-		if (!(filename in this.files)) {
+		if (!exists) {
+			log("vfs", "  creating new file with version 1", "debug");
 			this.files[filename] = {
 				version: 1,
 				content,
@@ -28,6 +32,7 @@ export class VirtualFileSystem {
 				version: this.files[filename].version + 1,
 				content,
 			};
+			log("vfs", `  updating file => version ${this.files[filename].version}`, "debug");
 		}
 	}
 
@@ -35,8 +40,10 @@ export class VirtualFileSystem {
 	 * Checks if a file exists in the virtual FS
 	 * @param filename The path of the file to look for
 	 */
-	public fileExists(filename: string): boolean {
-		return filename in this.files;
+	public fileExists(filename: string, suppressLog: boolean = false): boolean {
+		const ret = filename in this.files;
+		if (!suppressLog) log("vfs", `fileExists("${filename}") => ${ret}`, "debug");
+		return ret;
 	}
 
 	/**
@@ -44,7 +51,8 @@ export class VirtualFileSystem {
 	 * @param filename The path of the file to look for
 	 */
 	public deleteFile(filename: string): void {
-		if (this.fileExists(filename)) delete this.files[filename];
+		log("vfs", `deleteFile("${filename}")`, "debug");
+		if (this.fileExists(filename, true)) delete this.files[filename];
 	}
 
 	/**
@@ -52,10 +60,13 @@ export class VirtualFileSystem {
 	 * @param filename The path of the file to look for
 	 */
 	public readFile(filename: string): string {
-		if (!this.fileExists(filename)) {
+		if (!this.fileExists(filename, true)) {
 			throw new Error(`The file ${filename} doesn't exist`);
 		}
-		return this.files[filename].content;
+
+		const ret = this.files[filename].content;
+		log("vfs", `readFile("${filename}") => length ${ret ? ret.length : 0}`, "debug");
+		return ret;
 	}
 
 	/**
@@ -63,27 +74,30 @@ export class VirtualFileSystem {
 	 * @param filename The path of the file to look for
 	 */
 	public getFileVersion(filename: string): number {
-		if (!this.fileExists(filename)) {
+		if (!this.fileExists(filename, true)) {
 			throw new Error(`The file ${filename} doesn't exist`);
 		}
-		return this.files[filename].version;
+		const ret = this.files[filename].version;
+		log("vfs", `getFileVersion("${filename}") => ${ret}`, "debug");
+		return ret;
 	}
 
 	/**
 	 * Returns the file names of all files in the virtual fs
 	 */
 	public getFilenames(): string[] {
+		log("vfs", `getFilenames()`, "debug");
 		return Object.keys(this.files);
 	}
 
 	public getDirectories(root: string): string[] {
-		log(`fs.getDirectories(${root})`, "debug");
+		log("vfs", `fs.getDirectories(${root})`, "debug");
 		let paths = this.getFilenames();
-		log(`fs.getDirectories => paths = ${paths}`, "debug");
+		log("vfs", `fs.getDirectories => paths = ${paths}`, "debug");
 		paths = paths.filter(p => p.startsWith(root));
-		log(`fs.getDirectories => paths = ${paths}`, "debug");
+		log("vfs", `fs.getDirectories => paths = ${paths}`, "debug");
 		paths = paths.map(p => p.substr(root.length + 1).split("/")[0]);
-		log(`fs.getDirectories => paths = ${paths}`, "debug");
+		log("vfs", `fs.getDirectories => paths = ${paths}`, "debug");
 		return paths;
 	}
 
