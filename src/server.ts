@@ -1,7 +1,7 @@
 import * as ts from "typescript";
 import { log, LoggerFunction, setCustomLogger } from "./logger";
 import { InMemoryServiceHost } from "./service-host";
-import { CompileResult, Diagnostic, repeatString, resolveLib, resolveTypings, enumLibFiles } from "./util";
+import { CompileResult, Diagnostic, enumLibFiles, repeatString, resolveLib, resolveTypings } from "./util";
 import { VirtualFileSystem } from "./virtual-fs";
 
 export class Server {
