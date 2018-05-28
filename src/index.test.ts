@@ -9,9 +9,8 @@ import { Server } from "./server";
 // tslint:disable:no-eval
 
 const options = {
-	// noEmitOnError: true has a big performance hit
-	noEmitOnError: false,
 	target: ts.ScriptTarget.ES2015,
+	lib: ["lib.es2015.d.ts"],
 };
 
 describe("compiler => ", function() {
@@ -84,7 +83,7 @@ console.log(buf.length)`,
 			}
 		});
 
-		it.only("service host", () => {
+		it("service host", () => {
 			const tsserver = new Server(options);
 			const ambient = fs.readFileSync("./test/ioBroker.d.ts", "utf8");
 			tsserver.provideAmbientDeclarations({ "global.d.ts": ambient });
