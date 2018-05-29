@@ -44,7 +44,7 @@ export class InMemoryServiceHost implements ts.LanguageServiceHost {
 
 	public getDefaultLibFileName(options: ts.CompilerOptions): string {
 		options = options || this.options;
-		log(`getDefaultLibFileName(${JSON.stringify(options, null, 4)})`, "debug");
+		log("host", `getDefaultLibFileName(${JSON.stringify(options, null, 4)})`, "debug");
 		return "lib.d.ts";
 	}
 	// log?(s: string): void {
@@ -58,7 +58,7 @@ export class InMemoryServiceHost implements ts.LanguageServiceHost {
 	// }
 
 	public readFile(path: string, encoding?: string): string {
-		log(`readFile(${path})`, "debug");
+		log("host", `readFile(${path})`, "debug");
 		if (this.fs.fileExists(path)) {
 			return this.fs.readFile(path);
 		} else if (path.indexOf("node_modules") > -1) {
@@ -66,19 +66,19 @@ export class InMemoryServiceHost implements ts.LanguageServiceHost {
 		}
 	}
 	public fileExists(path: string): boolean {
-		log(`fileExists(${path})`, "debug");
+		log("host", `fileExists(${path})`, "debug");
 		let ret: boolean;
 		if (this.fs.fileExists(path)) {
 			ret = true;
 		} else if (path.indexOf("node_modules") > -1) {
 			ret = ts.sys.fileExists(path);
 		}
-		log(`fileExists(${path}) => ${ret}`, "debug");
+		log("host", `fileExists(${path}) => ${ret}`, "debug");
 		return ret;
 	}
 
 	public readDirectory(path: string, extensions?: ReadonlyArray<string>, exclude?: ReadonlyArray<string>, include?: ReadonlyArray<string>, depth?: number): string[] {
-		log(`readDirectory(
+		log("host", `readDirectory(
 	${path},
 	${extensions ? JSON.stringify(extensions) : "null"},
 	${exclude ? JSON.stringify(exclude) : "null"},
@@ -89,7 +89,7 @@ export class InMemoryServiceHost implements ts.LanguageServiceHost {
 	}
 
 	public getDirectories(directoryName: string): string[] {
-		log(`getDirectories(${directoryName})`, "debug");
+		log("host", `getDirectories(${directoryName})`, "debug");
 
 		// typings should be loaded from the virtual fs or we get problems
 		if (directoryName.indexOf("node_modules/@types") > -1) {

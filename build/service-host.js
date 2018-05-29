@@ -33,7 +33,7 @@ var InMemoryServiceHost = /** @class */ (function () {
     };
     InMemoryServiceHost.prototype.getDefaultLibFileName = function (options) {
         options = options || this.options;
-        logger_1.log("getDefaultLibFileName(" + JSON.stringify(options, null, 4) + ")", "debug");
+        logger_1.log("host", "getDefaultLibFileName(" + JSON.stringify(options, null, 4) + ")", "debug");
         return "lib.d.ts";
     };
     // log?(s: string): void {
@@ -46,7 +46,7 @@ var InMemoryServiceHost = /** @class */ (function () {
     // 	throw new Error("Method not implemented.");
     // }
     InMemoryServiceHost.prototype.readFile = function (path, encoding) {
-        logger_1.log("readFile(" + path + ")", "debug");
+        logger_1.log("host", "readFile(" + path + ")", "debug");
         if (this.fs.fileExists(path)) {
             return this.fs.readFile(path);
         }
@@ -55,7 +55,7 @@ var InMemoryServiceHost = /** @class */ (function () {
         }
     };
     InMemoryServiceHost.prototype.fileExists = function (path) {
-        logger_1.log("fileExists(" + path + ")", "debug");
+        logger_1.log("host", "fileExists(" + path + ")", "debug");
         var ret;
         if (this.fs.fileExists(path)) {
             ret = true;
@@ -63,15 +63,15 @@ var InMemoryServiceHost = /** @class */ (function () {
         else if (path.indexOf("node_modules") > -1) {
             ret = ts.sys.fileExists(path);
         }
-        logger_1.log("fileExists(" + path + ") => " + ret, "debug");
+        logger_1.log("host", "fileExists(" + path + ") => " + ret, "debug");
         return ret;
     };
     InMemoryServiceHost.prototype.readDirectory = function (path, extensions, exclude, include, depth) {
-        logger_1.log("readDirectory(\n\t" + path + ",\n\t" + (extensions ? JSON.stringify(extensions) : "null") + ",\n\t" + (exclude ? JSON.stringify(exclude) : "null") + ",\n\t" + (include ? JSON.stringify(include) : "null") + ",\n\t" + depth + ",\n", "debug");
+        logger_1.log("host", "readDirectory(\n\t" + path + ",\n\t" + (extensions ? JSON.stringify(extensions) : "null") + ",\n\t" + (exclude ? JSON.stringify(exclude) : "null") + ",\n\t" + (include ? JSON.stringify(include) : "null") + ",\n\t" + depth + ",\n", "debug");
         return ts.sys.readDirectory(path, extensions, exclude, include, depth);
     };
     InMemoryServiceHost.prototype.getDirectories = function (directoryName) {
-        logger_1.log("getDirectories(" + directoryName + ")", "debug");
+        logger_1.log("host", "getDirectories(" + directoryName + ")", "debug");
         // typings should be loaded from the virtual fs or we get problems
         if (directoryName.indexOf("node_modules/@types") > -1) {
             return [];
