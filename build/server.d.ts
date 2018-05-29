@@ -2,7 +2,7 @@ import * as ts from "typescript";
 import { LoggerFunction } from "./logger";
 import { CompileResult } from "./util";
 export declare class Server {
-    private options;
+    private options?;
     private service;
     private fs;
     private host;

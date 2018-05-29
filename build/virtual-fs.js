@@ -13,13 +13,13 @@ var VirtualFileSystem = /** @class */ (function () {
      */
     VirtualFileSystem.prototype.writeFile = function (filename, content, overwrite) {
         if (overwrite === void 0) { overwrite = false; }
-        logger_1.log("vfs", "writeFile(filename: \"" + filename + "\", content: length " + (content ? content.length : 0) + ", overwrite: " + overwrite, "debug");
+        logger_1.log("vfs", "writeFile(filename: \"" + filename + "\", content: length " + (content ? content.length : 0) + ", overwrite: " + overwrite, "silly");
         var exists = this.fileExists(filename, true);
         if (!overwrite && exists) {
             throw new Error("The file " + filename + " already exists. Set overwrite to true if you want to override it");
         }
         if (!exists) {
-            logger_1.log("vfs", "  creating new file with version 1", "debug");
+            logger_1.log("vfs", "  creating new file with version 1", "silly");
             this.files[filename] = {
                 version: 1,
                 content: content,
@@ -30,7 +30,7 @@ var VirtualFileSystem = /** @class */ (function () {
                 version: this.files[filename].version + 1,
                 content: content,
             };
-            logger_1.log("vfs", "  updating file => version " + this.files[filename].version, "debug");
+            logger_1.log("vfs", "  updating file => version " + this.files[filename].version, "silly");
         }
     };
     /**
@@ -41,7 +41,7 @@ var VirtualFileSystem = /** @class */ (function () {
         if (suppressLog === void 0) { suppressLog = false; }
         var ret = filename in this.files;
         if (!suppressLog)
-            logger_1.log("vfs", "fileExists(\"" + filename + "\") => " + ret, "debug");
+            logger_1.log("vfs", "fileExists(\"" + filename + "\") => " + ret, "silly");
         return ret;
     };
     /**
@@ -49,7 +49,7 @@ var VirtualFileSystem = /** @class */ (function () {
      * @param filename The path of the file to look for
      */
     VirtualFileSystem.prototype.deleteFile = function (filename) {
-        logger_1.log("vfs", "deleteFile(\"" + filename + "\")", "debug");
+        logger_1.log("vfs", "deleteFile(\"" + filename + "\")", "silly");
         if (this.fileExists(filename, true))
             delete this.files[filename];
     };
@@ -62,7 +62,7 @@ var VirtualFileSystem = /** @class */ (function () {
             throw new Error("The file " + filename + " doesn't exist");
         }
         var ret = this.files[filename].content;
-        logger_1.log("vfs", "readFile(\"" + filename + "\") => length " + (ret ? ret.length : 0), "debug");
+        logger_1.log("vfs", "readFile(\"" + filename + "\") => length " + (ret ? ret.length : 0), "silly");
         return ret;
     };
     /**
@@ -74,24 +74,24 @@ var VirtualFileSystem = /** @class */ (function () {
             throw new Error("The file " + filename + " doesn't exist");
         }
         var ret = this.files[filename].version;
-        logger_1.log("vfs", "getFileVersion(\"" + filename + "\") => " + ret, "debug");
+        logger_1.log("vfs", "getFileVersion(\"" + filename + "\") => " + ret, "silly");
         return ret;
     };
     /**
      * Returns the file names of all files in the virtual fs
      */
     VirtualFileSystem.prototype.getFilenames = function () {
-        logger_1.log("vfs", "getFilenames()", "debug");
+        logger_1.log("vfs", "getFilenames()", "silly");
         return Object.keys(this.files);
     };
     VirtualFileSystem.prototype.getDirectories = function (root) {
-        logger_1.log("vfs", "fs.getDirectories(" + root + ")", "debug");
+        logger_1.log("vfs", "fs.getDirectories(" + root + ")", "silly");
         var paths = this.getFilenames();
-        logger_1.log("vfs", "fs.getDirectories => paths = " + paths, "debug");
+        logger_1.log("vfs", "fs.getDirectories => paths = " + paths, "silly");
         paths = paths.filter(function (p) { return p.startsWith(root); });
-        logger_1.log("vfs", "fs.getDirectories => paths = " + paths, "debug");
+        logger_1.log("vfs", "fs.getDirectories => paths = " + paths, "silly");
         paths = paths.map(function (p) { return p.substr(root.length + 1).split("/")[0]; });
-        logger_1.log("vfs", "fs.getDirectories => paths = " + paths, "debug");
+        logger_1.log("vfs", "fs.getDirectories => paths = " + paths, "silly");
         return paths;
     };
     return VirtualFileSystem;

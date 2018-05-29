@@ -66,11 +66,12 @@ var Server = /** @class */ (function () {
         var emitResult = this.service.getEmitOutput(filename);
         rawDiagnostics.push.apply(rawDiagnostics, this.service.getCompilerOptionsDiagnostics());
         var diagnostics = rawDiagnostics.map(function (diagnostic) {
+            var _a;
             var lineNr = 0;
             var charNr = 0;
             if (diagnostic.file != null) {
-                var _a = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start), line = _a.line, character = _a.character;
-                _b = [line, character], lineNr = _b[0], charNr = _b[1];
+                var _b = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start), line = _b.line, character = _b.character;
+                _a = [line, character], lineNr = _a[0], charNr = _a[1];
             }
             var description = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
             var type = ts.DiagnosticCategory[diagnostic.category].toLowerCase();
@@ -84,7 +85,6 @@ var Server = /** @class */ (function () {
                 description: description,
                 annotatedSource: annotatedSource,
             };
-            var _b;
         });
         var hasError = ((!diagnostics.every(function (d) { return d.type !== "error"; }) ||
             (emitResult.emitSkipped && !this.options.emitDeclarationOnly))
