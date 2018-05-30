@@ -13,7 +13,7 @@ const options = {
 	lib: ["lib.es2015.d.ts"],
 };
 
-describe("compiler => ", function() {
+describe("compiler => ", function () {
 	this.timeout(30000);
 
 	it("it should not explode", () => {
@@ -67,7 +67,7 @@ declare global {
 	});
 });
 
-describe("performance check =>", function() {
+describe("performance check =>", function () {
 	this.timeout(30000);
 
 	it("compiler", () => {
@@ -101,4 +101,88 @@ console.log(buf.length)`,
 			// call durations: ~1200, then ~100..200 ms for the following calls
 		}
 	});
+});
+
+describe("error detection =>", function () {
+	this.timeout(30000);
+
+	const noEmitOnErrorOptions: ts.CompilerOptions = {
+		declaration: true,
+		target: ts.ScriptTarget.ES2015,
+		noEmitOnError: true,
+	};
+	const emitOnErrorOptions: ts.CompilerOptions = {
+		declaration: true,
+		target: ts.ScriptTarget.ES2015,
+		noEmitOnError: false,
+	};
+
+	const noEmitOnErrorServer = new Server(noEmitOnErrorOptions);
+	const emitOnErrorServer = new Server(emitOnErrorOptions);
+	const ambient = fs.readFileSync("./test/ioBroker.d.ts", "utf8");
+	noEmitOnErrorServer.provideAmbientDeclarations({ "global.d.ts": ambient });
+	emitOnErrorServer.provideAmbientDeclarations({ "global.d.ts": ambient });
+
+	let resultNoEmitOnError: CompileResult;
+	let resultEmitOnError: CompileResult;
+
+	describe("syntax errors => ", () => {
+		it("should be detected, regardless of the noEmitOnError setting", () => {
+			const codeWithSyntaxError = `const buf = Buffer.alloc(1 +);
+console.log(buf.length)`;
+
+			resultEmitOnError = emitOnErrorServer.compile("index.ts", codeWithSyntaxError);
+			expect(resultEmitOnError.success).to.be.true;
+			expect(resultEmitOnError.diagnostics).to.have.length.of.at.least(1);
+
+			resultNoEmitOnError = noEmitOnErrorServer.compile("index.ts", codeWithSyntaxError);
+			expect(resultNoEmitOnError.success).to.be.false;
+		});
+
+		it("when noEmitOnError == false, code should still be emitted", () => {
+			expect(resultEmitOnError.result)
+				.to.exist
+				.and.to.equal("const buf = Buffer.alloc(1 + );\r\nconsole.log(buf.length);\r\n")
+				;
+			expect(resultEmitOnError.declarations)
+				.to.exist
+				.and.to.equal("declare const buf: Buffer;\r\n")
+				;
+		});
+
+		it("when noEmitOnError == true, code should NOT be emitted", () => {
+			expect(resultNoEmitOnError.result).to.be.undefined;
+			expect(resultNoEmitOnError.declarations).to.be.undefined;
+		});
+	});
+
+	describe("semantic errors => ", () => {
+		it("should be detected, regardless of the noEmitOnError setting", () => {
+			const codeWithSyntaxError = `let buf: Buffer = "foo"`;
+
+			resultEmitOnError = emitOnErrorServer.compile("index.ts", codeWithSyntaxError);
+			expect(resultEmitOnError.success).to.be.true;
+			expect(resultEmitOnError.diagnostics).to.have.length.of.at.least(1);
+
+			resultNoEmitOnError = noEmitOnErrorServer.compile("index.ts", codeWithSyntaxError);
+			expect(resultNoEmitOnError.success).to.be.false;
+		});
+
+		it("when noEmitOnError == false, code should still be emitted", () => {
+			expect(resultEmitOnError.result)
+				.to.exist
+				.and.to.equal("let buf = \"foo\";\r\n")
+				;
+			expect(resultEmitOnError.declarations)
+				.to.exist
+				.and.to.equal("declare let buf: Buffer;\r\n")
+				;
+		});
+
+		it("when noEmitOnError == true, code should NOT be emitted", () => {
+			expect(resultNoEmitOnError.result).to.be.undefined;
+			expect(resultNoEmitOnError.declarations).to.be.undefined;
+		});
+	});
+
 });

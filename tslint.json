@@ -21,6 +21,11 @@
         "arrow-parens": false,
         "no-bitwise": false,
         "quotemark": [true, "double", "avoid-escape"],
-        "no-console": [false]
+        "no-console": [false],
+        "space-before-function-paren": [true, {
+            "anonymous": "always", 
+            "named": "never", 
+            "asyncArrow": "always"
+        }]
     }
 }
