@@ -23,10 +23,19 @@ export function compile(script: string, compilerOptions?: ts.CompilerOptions, am
 
 	// set default compiler options
 	compilerOptions = compilerOptions || {};
+	compilerOptions.moduleResolution = ts.ModuleResolutionKind.NodeJs;
+	// Don't emit faulty code (by default)
 	if (compilerOptions.noEmitOnError == null) compilerOptions.noEmitOnError = true;
 	// emit declarations if possible
 	if (compilerOptions.declaration == null) compilerOptions.declaration = true;
-	compilerOptions.moduleResolution = ts.ModuleResolutionKind.NodeJs;
+
+	// According to https://github.com/Microsoft/TypeScript/issues/24444#issuecomment-392970120
+	// combining noEmitOnError=true and declaration=true massively increases the work done
+	// by the compiler. To work around it, we call the compiler with noEmitOnError=false
+	// and use the actual value to determine if we continue with the emit
+	const internalOptions = Object.assign({}, compilerOptions, {
+		noEmitOnError: false,
+	} as ts.CompilerOptions);
 
 	// provide the source file in the virtual fs
 	const fs = new VirtualFileSystem();
@@ -38,20 +47,20 @@ export function compile(script: string, compilerOptions?: ts.CompilerOptions, am
 	}
 
 	// create the virtual host
-	const host = new InMemoryHost(fs, compilerOptions);
+	const host = new InMemoryHost(fs, internalOptions);
 	// create the compiler and provide nodejs typings
 	const allFiles = [
 		"@types/node/index.d.ts",
 		...Object.keys(ambientDeclarations),
 		SCRIPT_FILENAME,
 	];
-	const program = ts.createProgram(allFiles, compilerOptions, host);
+	const program = ts.createProgram(allFiles, internalOptions, host);
 
 	// compile the script
 	const emitResult = program.emit();
 
 	// diagnose the compilation result
-	const rawDiagnostics = compilerOptions.noEmitOnError ? emitResult.diagnostics : ts.getPreEmitDiagnostics(program);
+	const rawDiagnostics = internalOptions.noEmitOnError ? emitResult.diagnostics : ts.getPreEmitDiagnostics(program);
 	const diagnostics = rawDiagnostics.map(diagnostic => {
 		let lineNr = 0;
 		let charNr = 0;
@@ -76,12 +85,14 @@ ${type.toUpperCase()}: ${description}`;
 	});
 
 	const hasError = (
-		(!diagnostics.every(d => d.type !== "error") || emitResult.emitSkipped)
+		(
+			diagnostics.find(d => d.type === "error") != null
+			|| (emitResult.emitSkipped && !compilerOptions.emitDeclarationOnly)
+		)
 		&& compilerOptions.noEmitOnError
 	);
 	let result: string;
 	const resultFilename = SCRIPT_FILENAME.replace(/ts$/, "js");
-
 	let declarations: string;
 	const declarationsFilename = SCRIPT_FILENAME.replace(/ts$/, "d.ts");
 	if (!hasError && fs.fileExists(resultFilename)) result = fs.readFile(resultFilename);

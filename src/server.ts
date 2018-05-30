@@ -20,15 +20,23 @@ export class Server {
 
 		// set default compiler options
 		this.options = this.options || {};
-		// TODO: We would like this to be true, but there's a bit performance hit
-		/* if (this.options.noEmitOnError == null) */ this.options.noEmitOnError = false;
+		this.options.moduleResolution = ts.ModuleResolutionKind.NodeJs;
+		// Don't emit faulty code (by default)
+		if (this.options.noEmitOnError == null) this.options.noEmitOnError = true;
 		// emit declarations if possible
 		if (this.options.declaration == null) this.options.declaration = true;
-		this.options.moduleResolution = ts.ModuleResolutionKind.NodeJs;
+
+		// According to https://github.com/Microsoft/TypeScript/issues/24444#issuecomment-392970120
+		// combining noEmitOnError=true and declaration=true massively increases the work done
+		// by the compiler. To work around it, we call the compiler with noEmitOnError=false
+		// and use the actual value to determine if we continue with the emit
+		const internalOptions = Object.assign({}, this.options, {
+			noEmitOnError: false,
+		} as ts.CompilerOptions);
 
 		// set up the build pipeline
 		this.fs = new VirtualFileSystem();
-		this.host = new InMemoryServiceHost(this.fs, this.options);
+		this.host = new InMemoryServiceHost(this.fs, internalOptions);
 		this.service = ts.createLanguageService(this.host, ts.createDocumentRegistry());
 
 		// provide the requested lib files
@@ -98,8 +106,8 @@ ${type.toUpperCase()}: ${description}`;
 
 		const hasError = (
 			(
-				!diagnostics.every(d => d.type !== "error") ||
-				(emitResult.emitSkipped && !this.options.emitDeclarationOnly)
+				diagnostics.find(d => d.type === "error") != null
+				|| (emitResult.emitSkipped && !this.options.emitDeclarationOnly)
 			)
 			&& this.options.noEmitOnError
 		);

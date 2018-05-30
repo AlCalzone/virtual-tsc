@@ -14,7 +14,6 @@ const options = {
 };
 
 describe("compiler => ", function() {
-
 	this.timeout(30000);
 
 	it("it should not explode", () => {
@@ -66,40 +65,40 @@ declare global {
 	it("it should force ambient declarations to be .d.ts files", () => {
 		expect(() => compile("", null, { "global.ts": "" })).to.throw();
 	});
+});
 
-	describe("performance check =>", () => {
-		it("compile()", function() {
-			this.timeout(10000);
-			const ambient = fs.readFileSync("./test/ioBroker.d.ts", "utf8");
-			let result: CompileResult;
-			for (let i = 0; i < 5; i++) {
-				result = compile(
-					`const buf = Buffer.alloc(${i} + 1);
-console.log(buf.length)`,
-					null, { "global.d.ts": ambient },
-				);
-				expect(result.success).to.be.true;
-				// about 700ms per call
-			}
-		});
+describe("performance check =>", function() {
+	this.timeout(30000);
 
-		it("service host", () => {
-			const tsserver = new Server(options);
-			const ambient = fs.readFileSync("./test/ioBroker.d.ts", "utf8");
-			tsserver.provideAmbientDeclarations({ "global.d.ts": ambient });
-			let result: CompileResult;
-			for (let i = 0; i < 5; i++) {
-				log("starting compilation", "info");
-				result = tsserver.compile("index.ts",
-					`const buf = Buffer.alloc(${i} + 1);
+	it("compiler", () => {
+		const ambient = fs.readFileSync("./test/ioBroker.d.ts", "utf8");
+		let result: CompileResult;
+		for (let i = 0; i < 5; i++) {
+			result = compile(
+				`const buf = Buffer.alloc(${i} + 1);
 console.log(buf.length)`,
-				);
-				log("compilation done!", "info");
-				expect(result.success).to.be.true;
-				expect(result.declarations).to.equal("declare const buf: Buffer;\r\n");
-				// about 4ms per call (after the 1st one)
-			}
-		});
+				null, { "global.d.ts": ambient },
+			);
+			expect(result.success).to.be.true;
+			// call durations: ~1200..900 ms
+		}
 	});
 
+	it("service host", () => {
+		const tsserver = new Server(options);
+		const ambient = fs.readFileSync("./test/ioBroker.d.ts", "utf8");
+		tsserver.provideAmbientDeclarations({ "global.d.ts": ambient });
+		let result: CompileResult;
+		for (let i = 0; i < 5; i++) {
+			log("starting compilation", "info");
+			result = tsserver.compile("index.ts",
+				`const buf = Buffer.alloc(${i} + 1);
+console.log(buf.length)`,
+			);
+			log("compilation done!", "info");
+			expect(result.success).to.be.true;
+			expect(result.declarations).to.equal("declare const buf: Buffer;\r\n");
+			// call durations: ~1200, then ~100..200 ms for the following calls
+		}
+	});
 });
