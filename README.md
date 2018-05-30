@@ -84,6 +84,9 @@ ERROR: Type '1' is not assignable to type 'string'.
 
 ## Changelog
 
+#### 0.4.5 (2018-05-30)
+* (AlCalzone) Fixed performance issues when `declaration` and `noEmitOnError` are both `true`
+
 #### 0.4.1 (2018-05-23)
 * (AlCalzone) Allow emitting only declaration files
 
