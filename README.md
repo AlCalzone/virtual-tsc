@@ -84,6 +84,9 @@ ERROR: Type '1' is not assignable to type 'string'.
 
 ## Changelog
 
+#### 0.4.6 (2018-08-03)
+* (AlCalzone) Allow TypeScript v3+ as a peer dependency
+
 #### 0.4.5 (2018-05-30)
 * (AlCalzone) Fixed performance issues when `declaration` and `noEmitOnError` are both `true`
 
