@@ -84,6 +84,9 @@ ERROR: Type '1' is not assignable to type 'string'.
 
 ## Changelog
 
+#### 0.5.0 (2020-01-28)
+* (AlCalzone) Passing `false` as the 2nd parameter to the Server constructor disables logging.
+
 #### 0.4.6 (2018-08-03)
 * (AlCalzone) Allow TypeScript v3+ as a peer dependency
 
