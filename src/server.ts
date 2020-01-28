@@ -13,7 +13,7 @@ export class Server {
 
 	constructor(
 		private options?: ts.CompilerOptions,
-		customLogger?: LoggerFunction,
+		customLogger?: LoggerFunction | false,
 	) {
 
 		if (customLogger != null) setCustomLogger(customLogger);

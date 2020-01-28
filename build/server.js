@@ -13,15 +13,23 @@ var Server = /** @class */ (function () {
             logger_1.setCustomLogger(customLogger);
         // set default compiler options
         this.options = this.options || {};
-        // TODO: We would like this to be true, but there's a bit performance hit
-        /* if (this.options.noEmitOnError == null) */ this.options.noEmitOnError = false;
+        this.options.moduleResolution = ts.ModuleResolutionKind.NodeJs;
+        // Don't emit faulty code (by default)
+        if (this.options.noEmitOnError == null)
+            this.options.noEmitOnError = true;
         // emit declarations if possible
         if (this.options.declaration == null)
             this.options.declaration = true;
-        this.options.moduleResolution = ts.ModuleResolutionKind.NodeJs;
+        // According to https://github.com/Microsoft/TypeScript/issues/24444#issuecomment-392970120
+        // combining noEmitOnError=true and declaration=true massively increases the work done
+        // by the compiler. To work around it, we call the compiler with noEmitOnError=false
+        // and use the actual value to determine if we continue with the emit
+        var internalOptions = Object.assign({}, this.options, {
+            noEmitOnError: false,
+        });
         // set up the build pipeline
         this.fs = new virtual_fs_1.VirtualFileSystem();
-        this.host = new service_host_1.InMemoryServiceHost(this.fs, this.options);
+        this.host = new service_host_1.InMemoryServiceHost(this.fs, internalOptions);
         this.service = ts.createLanguageService(this.host, ts.createDocumentRegistry());
         // provide the requested lib files
         if (!options.noLib) {
@@ -86,8 +94,8 @@ var Server = /** @class */ (function () {
             };
             var _b;
         });
-        var hasError = ((!diagnostics.every(function (d) { return d.type !== "error"; }) ||
-            (emitResult.emitSkipped && !this.options.emitDeclarationOnly))
+        var hasError = ((diagnostics.find(function (d) { return d.type === "error"; }) != null
+            || (emitResult.emitSkipped && !this.options.emitDeclarationOnly))
             && this.options.noEmitOnError);
         var result;
         var declarations;

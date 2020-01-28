@@ -21,6 +21,8 @@ function log() {
     for (var _i = 0; _i < arguments.length; _i++) {
         args[_i] = arguments[_i];
     }
+    if (customLogger === false)
+        return;
     // we only accept strings
     if (!args || !args.length || !args.every(function (arg) { return typeof arg === "string"; })) {
         throw new Error("Invalid arguments passed to log()");

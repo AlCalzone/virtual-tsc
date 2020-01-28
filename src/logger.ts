@@ -8,8 +8,8 @@ export type Severity = "info" | "warn" | "debug" | "error" | "silly";
 
 export type LoggerFunction = (message: string, severity?: Severity) => void;
 
-let customLogger: LoggerFunction;
-export function setCustomLogger(logger: LoggerFunction): void {
+let customLogger: LoggerFunction | false;
+export function setCustomLogger(logger: LoggerFunction | false): void {
 	customLogger = logger;
 }
 
@@ -24,6 +24,8 @@ colors.setTheme({
 export function log(message: string, severity: Severity): void;
 export function log(namespace: SubNamespaces, message: string, severity: Severity): void;
 export function log(...args: any[]) {
+
+	if (customLogger === false) return;
 
 	// we only accept strings
 	if (!args || !args.length || !args.every(arg => typeof arg === "string")) {

@@ -25,12 +25,20 @@ function compile(script, compilerOptions, ambientDeclarations) {
     var sourceLines = script.split("\n");
     // set default compiler options
     compilerOptions = compilerOptions || {};
+    compilerOptions.moduleResolution = ts.ModuleResolutionKind.NodeJs;
+    // Don't emit faulty code (by default)
     if (compilerOptions.noEmitOnError == null)
         compilerOptions.noEmitOnError = true;
     // emit declarations if possible
     if (compilerOptions.declaration == null)
         compilerOptions.declaration = true;
-    compilerOptions.moduleResolution = ts.ModuleResolutionKind.NodeJs;
+    // According to https://github.com/Microsoft/TypeScript/issues/24444#issuecomment-392970120
+    // combining noEmitOnError=true and declaration=true massively increases the work done
+    // by the compiler. To work around it, we call the compiler with noEmitOnError=false
+    // and use the actual value to determine if we continue with the emit
+    var internalOptions = Object.assign({}, compilerOptions, {
+        noEmitOnError: false,
+    });
     // provide the source file in the virtual fs
     var fs = new virtual_fs_1.VirtualFileSystem();
     fs.writeFile(SCRIPT_FILENAME, script);
@@ -42,18 +50,18 @@ function compile(script, compilerOptions, ambientDeclarations) {
         fs.writeFile(ambientFile, ambientDeclarations[ambientFile], true);
     }
     // create the virtual host
-    var host = new host_1.InMemoryHost(fs, compilerOptions);
+    var host = new host_1.InMemoryHost(fs, internalOptions);
     // create the compiler and provide nodejs typings
     var allFiles = [
         "@types/node/index.d.ts"
     ].concat(Object.keys(ambientDeclarations), [
         SCRIPT_FILENAME,
     ]);
-    var program = ts.createProgram(allFiles, compilerOptions, host);
+    var program = ts.createProgram(allFiles, internalOptions, host);
     // compile the script
     var emitResult = program.emit();
     // diagnose the compilation result
-    var rawDiagnostics = compilerOptions.noEmitOnError ? emitResult.diagnostics : ts.getPreEmitDiagnostics(program);
+    var rawDiagnostics = internalOptions.noEmitOnError ? emitResult.diagnostics : ts.getPreEmitDiagnostics(program);
     var diagnostics = rawDiagnostics.map(function (diagnostic) {
         var lineNr = 0;
         var charNr = 0;
@@ -75,7 +83,8 @@ function compile(script, compilerOptions, ambientDeclarations) {
         };
         var _b;
     });
-    var hasError = ((!diagnostics.every(function (d) { return d.type !== "error"; }) || emitResult.emitSkipped)
+    var hasError = ((diagnostics.find(function (d) { return d.type === "error"; }) != null
+        || (emitResult.emitSkipped && !compilerOptions.emitDeclarationOnly))
         && compilerOptions.noEmitOnError);
     var result;
     var resultFilename = SCRIPT_FILENAME.replace(/ts$/, "js");

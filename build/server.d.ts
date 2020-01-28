@@ -6,7 +6,7 @@ export declare class Server {
     private service;
     private fs;
     private host;
-    constructor(options?: ts.CompilerOptions, customLogger?: LoggerFunction);
+    constructor(options?: ts.CompilerOptions, customLogger?: LoggerFunction | false);
     provideAmbientDeclarations(declarations?: {
         [filename: string]: string;
     }): void;
