@@ -83,45 +83,52 @@ ERROR: Type '1' is not assignable to type 'string'.
 ```
 
 ## Changelog
+<!--
+	Placeholder for the next version (at the beginning of the line):
+	### __WORK IN PROGRESS__
+-->
 
-#### 0.5.0 (2020-01-28)
+### __WORK IN PROGRESS__
+* (AlCalzone) Expose `setTypeScriptResolveOptions` to set the options for resolving TypeScript and its lib files.
+
+### 0.5.0 (2020-01-28)
 * (AlCalzone) Passing `false` as the 2nd parameter to the Server constructor disables logging.
 
-#### 0.4.6 (2018-08-03)
+### 0.4.6 (2018-08-03)
 * (AlCalzone) Allow TypeScript v3+ as a peer dependency
 
-#### 0.4.5 (2018-05-30)
+### 0.4.5 (2018-05-30)
 * (AlCalzone) Fixed performance issues when `declaration` and `noEmitOnError` are both `true`
 
-#### 0.4.1 (2018-05-23)
+### 0.4.1 (2018-05-23)
 * (AlCalzone) Allow emitting only declaration files
 
-#### 0.4.0 (2018-05-23)
+### 0.4.0 (2018-05-23)
 * (AlCalzone) Emit declaration files (*.d.ts), enabled by default
 
-#### 0.3.4 (2017-11-26)
+### 0.3.4 (2017-11-26)
 * (AlCalzone) Added a custom logger output
 
-#### 0.3.3 (2017-11-14)
+### 0.3.3 (2017-11-14)
 * (AlCalzone) Fixed lib resolution for the LanguageServiceAPI
 
-#### 0.3.2 (2017-11-09)
+### 0.3.2 (2017-11-09)
 * (AlCalzone) Use the LanguageServiceAPI to speed up multiple compilations
 
-#### 0.2.3 (2017-10-13)
+### 0.2.3 (2017-10-13)
 * (AlCalzone) Fixed module resolution on Linux
 * (AlCalzone) Added async compile method
 
-#### 0.2.2 (2017-10-13)
+### 0.2.2 (2017-10-13)
 * (AlCalzone) support NodeJS 4
 
-#### 0.2.1 (2017-10-13)
+### 0.2.1 (2017-10-13)
 * (AlCalzone) support output of builds with errors
 
-#### 0.2.0 (2017-10-13)
+### 0.2.0 (2017-10-13)
 * (AlCalzone) support ambient declarations
 
-#### 0.1.0 (2017-10-13)
+### 0.1.0 (2017-10-13)
 * (AlCalzone) initial release. 
 
 ## License
