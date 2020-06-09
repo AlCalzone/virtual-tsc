@@ -1,6 +1,13 @@
 "use strict";
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var ts = require("typescript");
+exports.compile = exports.compileAsync = void 0;
 var host_1 = require("./host");
 var util_1 = require("./util");
 var virtual_fs_1 = require("./virtual-fs");
@@ -22,6 +29,7 @@ function compileAsync(script, compilerOptions, declarations) {
 exports.compileAsync = compileAsync;
 function compile(script, compilerOptions, ambientDeclarations) {
     if (ambientDeclarations === void 0) { ambientDeclarations = {}; }
+    var ts = util_1.getTypeScript();
     var sourceLines = script.split("\n");
     // set default compiler options
     compilerOptions = compilerOptions || {};
@@ -52,9 +60,9 @@ function compile(script, compilerOptions, ambientDeclarations) {
     // create the virtual host
     var host = new host_1.InMemoryHost(fs, internalOptions);
     // create the compiler and provide nodejs typings
-    var allFiles = [
+    var allFiles = __spreadArrays([
         "@types/node/index.d.ts"
-    ].concat(Object.keys(ambientDeclarations), [
+    ], Object.keys(ambientDeclarations), [
         SCRIPT_FILENAME,
     ]);
     var program = ts.createProgram(allFiles, internalOptions, host);
@@ -63,11 +71,12 @@ function compile(script, compilerOptions, ambientDeclarations) {
     // diagnose the compilation result
     var rawDiagnostics = internalOptions.noEmitOnError ? emitResult.diagnostics : ts.getPreEmitDiagnostics(program);
     var diagnostics = rawDiagnostics.map(function (diagnostic) {
+        var _a;
         var lineNr = 0;
         var charNr = 0;
         if (diagnostic.file != null) {
-            var _a = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start), line = _a.line, character = _a.character;
-            _b = [line, character], lineNr = _b[0], charNr = _b[1];
+            var _b = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start), line = _b.line, character = _b.character;
+            _a = [line, character], lineNr = _a[0], charNr = _a[1];
         }
         var description = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
         var type = ts.DiagnosticCategory[diagnostic.category].toLowerCase();
@@ -81,7 +90,6 @@ function compile(script, compilerOptions, ambientDeclarations) {
             description: description,
             annotatedSource: annotatedSource,
         };
-        var _b;
     });
     var hasError = ((diagnostics.find(function (d) { return d.type === "error"; }) != null
         || (emitResult.emitSkipped && !compilerOptions.emitDeclarationOnly))

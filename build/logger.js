@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.log = exports.setCustomLogger = void 0;
 // tslint:disable-next-line:no-var-requires
 var colors = require("colors/safe");
 var debug = require("debug");

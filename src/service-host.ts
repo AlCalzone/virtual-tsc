@@ -1,23 +1,25 @@
-import * as nodePath from "path";
-import * as ts from "typescript";
 import { log } from "./logger";
-import { VirtualFileSystem } from "./virtual-fs";
+import type { VirtualFileSystem } from "./virtual-fs";
+import type { CompilerOptions as tsCompilerOptions, LanguageServiceHost as tsLanguageServiceHost, IScriptSnapshot as tsIScriptSnapshot } from "typescript";
+import { getTypeScript } from "./util";
 
 // https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#incremental-build-support-using-the-language-services
 
 /**
  * Implementation of LanguageServiceHost that works with in-memory-only source files
  */
-export class InMemoryServiceHost implements ts.LanguageServiceHost {
+export class InMemoryServiceHost implements tsLanguageServiceHost {
+
+	private ts: typeof import("typescript");
 
 	constructor(
 		private fs: VirtualFileSystem,
-		private options: ts.CompilerOptions,
+		private options: tsCompilerOptions,
 	) {
-
+		this.ts = getTypeScript();
 	}
 
-	public getCompilationSettings(): ts.CompilerOptions {
+	public getCompilationSettings(): tsCompilerOptions {
 		return this.options;
 	}
 
@@ -32,17 +34,17 @@ export class InMemoryServiceHost implements ts.LanguageServiceHost {
 		return this.fs.getFileVersion(fileName).toString();
 	}
 
-	public getScriptSnapshot(fileName: string): ts.IScriptSnapshot {
+	public getScriptSnapshot(fileName: string): tsIScriptSnapshot {
 		if (!this.fs.fileExists(fileName)) return undefined;
-		return ts.ScriptSnapshot.fromString(this.fs.readFile(fileName));
+		return this.ts.ScriptSnapshot.fromString(this.fs.readFile(fileName));
 	}
 
 	public getCurrentDirectory(): string {
 		// return CWD;
-		return ts.sys.getCurrentDirectory();
+		return this.ts.sys.getCurrentDirectory();
 	}
 
-	public getDefaultLibFileName(options: ts.CompilerOptions): string {
+	public getDefaultLibFileName(options: tsCompilerOptions): string {
 		options = options || this.options;
 		log("host", `getDefaultLibFileName(${JSON.stringify(options, null, 4)})`, "debug");
 		return "lib.d.ts";
@@ -62,7 +64,7 @@ export class InMemoryServiceHost implements ts.LanguageServiceHost {
 		if (this.fs.fileExists(path)) {
 			return this.fs.readFile(path);
 		} else if (path.indexOf("node_modules") > -1) {
-			return ts.sys.readFile(path);
+			return this.ts.sys.readFile(path);
 		}
 	}
 	public fileExists(path: string): boolean {
@@ -71,7 +73,7 @@ export class InMemoryServiceHost implements ts.LanguageServiceHost {
 		if (this.fs.fileExists(path)) {
 			ret = true;
 		} else if (path.indexOf("node_modules") > -1) {
-			ret = ts.sys.fileExists(path);
+			ret = this.ts.sys.fileExists(path);
 		}
 		log("host", `fileExists(${path}) => ${ret}`, "debug");
 		return ret;
@@ -85,7 +87,7 @@ export class InMemoryServiceHost implements ts.LanguageServiceHost {
 	${include ? JSON.stringify(include) : "null"},
 	${depth},
 `, "debug");
-		return ts.sys.readDirectory(path, extensions, exclude, include, depth);
+		return this.ts.sys.readDirectory(path, extensions, exclude, include, depth);
 	}
 
 	public getDirectories(directoryName: string): string[] {
@@ -97,7 +99,7 @@ export class InMemoryServiceHost implements ts.LanguageServiceHost {
 		}
 
 		try {
-			return ts.sys.getDirectories(directoryName);
+			return this.ts.sys.getDirectories(directoryName);
 		} catch (e) {
 			return [];
 		}

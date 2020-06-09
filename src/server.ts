@@ -1,26 +1,28 @@
 import * as nodePath from "path";
-import * as ts from "typescript";
 import { log, LoggerFunction, setCustomLogger } from "./logger";
 import { InMemoryServiceHost } from "./service-host";
-import { CompileResult, Diagnostic, enumLibFiles, repeatString, resolveLib, resolveTypings } from "./util";
+import { CompileResult, Diagnostic, enumLibFiles, repeatString, resolveLib, resolveTypings, getTypeScript } from "./util";
 import { VirtualFileSystem } from "./virtual-fs";
+import type { LanguageService as tsLanguageService, CompilerOptions as tsCompilerOptions, Diagnostic as tsDiagnostic } from "typescript";
 
 export class Server {
 
-	private service: ts.LanguageService;
+	private service: tsLanguageService;
 	private fs: VirtualFileSystem;
 	private host: InMemoryServiceHost;
+	private ts: typeof import("typescript");
 
 	constructor(
-		private options?: ts.CompilerOptions,
+		private options?: tsCompilerOptions,
 		customLogger?: LoggerFunction | false,
 	) {
+		this.ts = getTypeScript();
 
 		if (customLogger != null) setCustomLogger(customLogger);
 
 		// set default compiler options
 		this.options = this.options || {};
-		this.options.moduleResolution = ts.ModuleResolutionKind.NodeJs;
+		this.options.moduleResolution = this.ts.ModuleResolutionKind.NodeJs;
 		// Don't emit faulty code (by default)
 		if (this.options.noEmitOnError == null) this.options.noEmitOnError = true;
 		// emit declarations if possible
@@ -32,18 +34,18 @@ export class Server {
 		// and use the actual value to determine if we continue with the emit
 		const internalOptions = Object.assign({}, this.options, {
 			noEmitOnError: false,
-		} as ts.CompilerOptions);
+		} as tsCompilerOptions);
 
 		// set up the build pipeline
 		this.fs = new VirtualFileSystem();
 		this.host = new InMemoryServiceHost(this.fs, internalOptions);
-		this.service = ts.createLanguageService(this.host, ts.createDocumentRegistry());
+		this.service = this.ts.createLanguageService(this.host, this.ts.createDocumentRegistry());
 
 		// provide the requested lib files
 		if (!options.noLib) {
 			const libFiles = enumLibFiles();
 			for (const file of libFiles) {
-				const fileContent = ts.sys.readFile(file);
+				const fileContent = this.ts.sys.readFile(file);
 				if (fileContent != null) this.fs.writeFile(nodePath.basename(file), fileContent, true);
 			}
 		}
@@ -56,7 +58,7 @@ export class Server {
 		for (const typings of basicTypings) {
 			// resolving a specific node module
 			const path = resolveTypings(typings);
-			const fileContent = ts.sys.readFile(path);
+			const fileContent = this.ts.sys.readFile(path);
 			if (fileContent != null) this.fs.writeFile(typings, fileContent, true);
 		}
 	}
@@ -73,7 +75,7 @@ export class Server {
 		const sourceLines = scriptContent.split("\n");
 		this.fs.writeFile(filename, scriptContent, true);
 
-		const rawDiagnostics: ts.Diagnostic[] = [];
+		const rawDiagnostics: tsDiagnostic[] = [];
 		rawDiagnostics.push(...this.service.getSyntacticDiagnostics(filename));
 		rawDiagnostics.push(...this.service.getSemanticDiagnostics(filename));
 
@@ -88,8 +90,8 @@ export class Server {
 				const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
 				[lineNr, charNr] = [line, character];
 			}
-			const description = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
-			const type = ts.DiagnosticCategory[diagnostic.category].toLowerCase() as "error" | "warning" | "message";
+			const description = this.ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
+			const type = this.ts.DiagnosticCategory[diagnostic.category].toLowerCase() as "error" | "warning" | "message";
 			const sourceLine = sourceLines[lineNr];
 			const annotatedSource = `${sourceLine}
 ${repeatString(" ", charNr)}^

@@ -1,11 +1,15 @@
-import * as ts from "typescript";
 import { InMemoryHost } from "./host";
-import { CompileResult, Diagnostic, repeatString } from "./util";
+import { CompileResult, Diagnostic, repeatString, getTypeScript } from "./util";
 import { VirtualFileSystem } from "./virtual-fs";
+import type { CompilerOptions as tsCompilerOptions } from "typescript";
 
 const SCRIPT_FILENAME: string = "__virtual-tsc__.ts";
 
-export function compileAsync(script: string, compilerOptions?: ts.CompilerOptions, declarations: {[filename: string]: string} = {}): Promise<CompileResult> {
+export function compileAsync(
+	script: string,
+	compilerOptions?: tsCompilerOptions,
+	declarations: {[filename: string]: string} = {},
+): Promise<CompileResult> {
 	return new Promise<CompileResult>((res, rej) => {
 		setImmediate(() => {
 			try {
@@ -18,7 +22,12 @@ export function compileAsync(script: string, compilerOptions?: ts.CompilerOption
 	});
 }
 
-export function compile(script: string, compilerOptions?: ts.CompilerOptions, ambientDeclarations: {[filename: string]: string} = {}): CompileResult {
+export function compile(
+	script: string, 
+	compilerOptions?: tsCompilerOptions, 
+	ambientDeclarations: {[filename: string]: string} = {},
+): CompileResult {
+	const ts = getTypeScript();
 	const sourceLines = script.split("\n");
 
 	// set default compiler options
@@ -35,7 +44,7 @@ export function compile(script: string, compilerOptions?: ts.CompilerOptions, am
 	// and use the actual value to determine if we continue with the emit
 	const internalOptions = Object.assign({}, compilerOptions, {
 		noEmitOnError: false,
-	} as ts.CompilerOptions);
+	} as tsCompilerOptions);
 
 	// provide the source file in the virtual fs
 	const fs = new VirtualFileSystem();

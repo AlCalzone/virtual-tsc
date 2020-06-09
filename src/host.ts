@@ -1,50 +1,52 @@
 import * as nodePath from "path";
-import * as ts from "typescript";
+import type { CompilerHost as tsCompilerHost, CompilerOptions as tsCompilerOptions, ScriptTarget as tsScriptTarget, SourceFile as tsSourceFile } from "typescript";
 import { log } from "./logger";
-import { resolveTypings } from "./util";
-import { VirtualFileSystem } from "./virtual-fs";
+import { resolveTypings, getTypeScript, getTypeScriptResolveOptions } from "./util";
+import type { VirtualFileSystem } from "./virtual-fs";
 
 // reference: https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#customizing-module-resolution
 
 /**
  * Implementation of CompilerHost that works with in-memory-only source files
  */
-export class InMemoryHost implements ts.CompilerHost {
+export class InMemoryHost implements tsCompilerHost {
 
 	constructor(
 		private fs: VirtualFileSystem,
-		private options: ts.CompilerOptions,
+		private options: tsCompilerOptions,
 	) {
-
+		this.ts = getTypeScript();
 	}
 
-	public getSourceFile(fileName: string, languageVersion: ts.ScriptTarget, onError?: (message: string) => void): ts.SourceFile {
+	private ts: typeof import("typescript");
+
+	public getSourceFile(fileName: string, languageVersion: tsScriptTarget, onError?: (message: string) => void): tsSourceFile {
 		let fileContent: string;
 		if (this.fs.fileExists(fileName)) {
 			log(`getSourceFile(fileName="${fileName}", version=${languageVersion}) => returning provided file`, "debug");
 			fileContent = this.fs.readFile(fileName);
 		} else if (/^lib\..*?d\.ts$/.test(fileName)) {
 			// resolving lib file
-			const libPath = nodePath.join(nodePath.dirname(require.resolve("typescript")), fileName);
+			const libPath = nodePath.join(nodePath.dirname(require.resolve("typescript", getTypeScriptResolveOptions())), fileName);
 			log(`getSourceFile(fileName="${fileName}") => resolved lib file ${libPath}`, "debug");
-			fileContent = ts.sys.readFile(libPath);
+			fileContent = this.ts.sys.readFile(libPath);
 			if (fileContent != null) this.fs.writeFile(fileName, fileContent, true);
 		} else if (/\@types\/.+$/.test(fileName)) {
 			// resolving a specific node module
 			log(`getSourceFile(fileName="${fileName}") => resolving typings`, "debug");
 			fileName = resolveTypings(fileName);
-			fileContent = ts.sys.readFile(fileName);
+			fileContent = this.ts.sys.readFile(fileName);
 			if (fileContent != null) this.fs.writeFile(fileName, fileContent, true);
 		}
 		if (fileContent != null) {
 			log("file content is not null", "debug");
-			return ts.createSourceFile(fileName, this.fs.readFile(fileName), languageVersion);
+			return this.ts.createSourceFile(fileName, this.fs.readFile(fileName), languageVersion);
 		} else {
 			log("file content is null", "debug");
 		}
 	}
 
-	public getDefaultLibFileName(options: ts.CompilerOptions): string {
+	public getDefaultLibFileName(options: tsCompilerOptions): string {
 		options = options || this.options;
 		log(`getDefaultLibFileName(${JSON.stringify(options, null, 4)})`, "debug");
 		return "lib.d.ts";
@@ -56,7 +58,7 @@ export class InMemoryHost implements ts.CompilerHost {
 	}
 
 	public getCurrentDirectory(): string {
-		const ret = ts.sys.getCurrentDirectory();
+		const ret = this.ts.sys.getCurrentDirectory();
 		log(`getCurrentDirectory() => ${ret}`, "debug");
 		return ret;
 	}
@@ -68,16 +70,16 @@ export class InMemoryHost implements ts.CompilerHost {
 
 	public getCanonicalFileName(fileName: string): string {
 		log(`getCanonicalFileName(${fileName})`, "debug");
-		return ts.sys.useCaseSensitiveFileNames ? fileName : fileName.toLowerCase();
+		return this.ts.sys.useCaseSensitiveFileNames ? fileName : fileName.toLowerCase();
 	}
 
 	public useCaseSensitiveFileNames(): boolean {
 		log(`useCaseSensitiveFileNames()`, "debug");
-		return ts.sys.useCaseSensitiveFileNames;
+		return this.ts.sys.useCaseSensitiveFileNames;
 	}
 	public getNewLine(): string {
 		log(`getNewLine()`, "debug");
-		return ts.sys.newLine;
+		return this.ts.sys.newLine;
 	}
 
 	// public resolveModuleNames?(moduleNames: string[], containingFile: string): ts.ResolvedModule[] {

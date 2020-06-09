@@ -1,8 +1,8 @@
-import * as ts from "typescript";
 import { CompileResult } from "./util";
-export declare function compileAsync(script: string, compilerOptions?: ts.CompilerOptions, declarations?: {
+import type { CompilerOptions as tsCompilerOptions } from "typescript";
+export declare function compileAsync(script: string, compilerOptions?: tsCompilerOptions, declarations?: {
     [filename: string]: string;
 }): Promise<CompileResult>;
-export declare function compile(script: string, compilerOptions?: ts.CompilerOptions, ambientDeclarations?: {
+export declare function compile(script: string, compilerOptions?: tsCompilerOptions, ambientDeclarations?: {
     [filename: string]: string;
 }): CompileResult;

@@ -1,6 +1,5 @@
 import * as nodeFS from "fs";
 import * as nodePath from "path";
-import * as ts from "typescript";
 import { log } from "./logger";
 export interface Diagnostic {
 	type: "error" | "warning" | "message";
@@ -41,6 +40,18 @@ export function endsWith(str: string, match: string): boolean {
 	);
 }
 
+let tsResolveOptions: { paths: string[] } | undefined;
+export function setTypeScriptResolveOptions(options: { paths: string[] } | undefined): void {
+	tsResolveOptions = options;
+}
+export function getTypeScriptResolveOptions(): { paths: string[] } | undefined {
+	return tsResolveOptions;
+}
+
+export function getTypeScript(): typeof import("typescript") {
+	return require(require.resolve("typescript", getTypeScriptResolveOptions()));
+}
+
 export function resolveTypings(typings: string): string {
 	if (!startsWith(typings, "@types") || nodePath.isAbsolute(typings)) {
 		// this is an absolute path
@@ -51,7 +62,7 @@ export function resolveTypings(typings: string): string {
 		typings = nodePath.join(typings, "index.d.ts");
 	}
 	try {
-		const ret = require.resolve(typings);
+		const ret = require.resolve(typings, getTypeScriptResolveOptions());
 		log(" => " + ret, "debug");
 		return ret;
 	} catch (e) {
@@ -62,14 +73,15 @@ export function resolveTypings(typings: string): string {
 
 export function resolveLib(libFile: string): string {
 	log(`resolving lib file ${libFile}`, "debug");
-	const libPath = require.resolve(`typescript/lib/${libFile}`);
+	const libPath = require.resolve(`typescript/lib/${libFile}`, getTypeScriptResolveOptions());
+	const ts = getTypeScript();
 	log(`libPath = ${libPath}`, "debug");
 	if (ts.sys.fileExists(libPath)) return libPath;
 }
 
 export function enumLibFiles(): string[] {
 	log("util", "enumLibFiles() =>", "debug");
-	const tsPath = require.resolve("typescript");
+	const tsPath = require.resolve("typescript", getTypeScriptResolveOptions());
 	const libFiles = nodeFS.readdirSync(nodePath.dirname(tsPath))
 		.filter(name => /^lib(\.[\w\d]+)*?\.d\.ts$/.test(name))
 		.map(file => nodePath.join(nodePath.dirname(tsPath), file))

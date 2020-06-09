@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Server = void 0;
 var nodePath = require("path");
-var ts = require("typescript");
 var logger_1 = require("./logger");
 var service_host_1 = require("./service-host");
 var util_1 = require("./util");
@@ -9,11 +9,12 @@ var virtual_fs_1 = require("./virtual-fs");
 var Server = /** @class */ (function () {
     function Server(options, customLogger) {
         this.options = options;
+        this.ts = util_1.getTypeScript();
         if (customLogger != null)
             logger_1.setCustomLogger(customLogger);
         // set default compiler options
         this.options = this.options || {};
-        this.options.moduleResolution = ts.ModuleResolutionKind.NodeJs;
+        this.options.moduleResolution = this.ts.ModuleResolutionKind.NodeJs;
         // Don't emit faulty code (by default)
         if (this.options.noEmitOnError == null)
             this.options.noEmitOnError = true;
@@ -30,13 +31,13 @@ var Server = /** @class */ (function () {
         // set up the build pipeline
         this.fs = new virtual_fs_1.VirtualFileSystem();
         this.host = new service_host_1.InMemoryServiceHost(this.fs, internalOptions);
-        this.service = ts.createLanguageService(this.host, ts.createDocumentRegistry());
+        this.service = this.ts.createLanguageService(this.host, this.ts.createDocumentRegistry());
         // provide the requested lib files
         if (!options.noLib) {
             var libFiles = util_1.enumLibFiles();
             for (var _i = 0, libFiles_1 = libFiles; _i < libFiles_1.length; _i++) {
                 var file = libFiles_1[_i];
-                var fileContent = ts.sys.readFile(file);
+                var fileContent = this.ts.sys.readFile(file);
                 if (fileContent != null)
                     this.fs.writeFile(nodePath.basename(file), fileContent, true);
             }
@@ -50,7 +51,7 @@ var Server = /** @class */ (function () {
             var typings = basicTypings_1[_a];
             // resolving a specific node module
             var path = util_1.resolveTypings(typings);
-            var fileContent = ts.sys.readFile(path);
+            var fileContent = this.ts.sys.readFile(path);
             if (fileContent != null)
                 this.fs.writeFile(typings, fileContent, true);
         }
@@ -66,6 +67,7 @@ var Server = /** @class */ (function () {
         }
     };
     Server.prototype.compile = function (filename, scriptContent) {
+        var _this = this;
         var sourceLines = scriptContent.split("\n");
         this.fs.writeFile(filename, scriptContent, true);
         var rawDiagnostics = [];
@@ -74,14 +76,15 @@ var Server = /** @class */ (function () {
         var emitResult = this.service.getEmitOutput(filename);
         rawDiagnostics.push.apply(rawDiagnostics, this.service.getCompilerOptionsDiagnostics());
         var diagnostics = rawDiagnostics.map(function (diagnostic) {
+            var _a;
             var lineNr = 0;
             var charNr = 0;
             if (diagnostic.file != null) {
-                var _a = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start), line = _a.line, character = _a.character;
-                _b = [line, character], lineNr = _b[0], charNr = _b[1];
+                var _b = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start), line = _b.line, character = _b.character;
+                _a = [line, character], lineNr = _a[0], charNr = _a[1];
             }
-            var description = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
-            var type = ts.DiagnosticCategory[diagnostic.category].toLowerCase();
+            var description = _this.ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
+            var type = _this.ts.DiagnosticCategory[diagnostic.category].toLowerCase();
             var sourceLine = sourceLines[lineNr];
             var annotatedSource = sourceLine + "\n" + util_1.repeatString(" ", charNr) + "^\n" + type.toUpperCase() + ": " + description;
             return {
@@ -92,7 +95,6 @@ var Server = /** @class */ (function () {
                 description: description,
                 annotatedSource: annotatedSource,
             };
-            var _b;
         });
         var hasError = ((diagnostics.find(function (d) { return d.type === "error"; }) != null
             || (emitResult.emitSkipped && !this.options.emitDeclarationOnly))

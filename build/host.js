@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.InMemoryHost = void 0;
 var nodePath = require("path");
-var ts = require("typescript");
 var logger_1 = require("./logger");
 var util_1 = require("./util");
 // reference: https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#customizing-module-resolution
@@ -12,6 +12,7 @@ var InMemoryHost = /** @class */ (function () {
     function InMemoryHost(fs, options) {
         this.fs = fs;
         this.options = options;
+        this.ts = util_1.getTypeScript();
     }
     InMemoryHost.prototype.getSourceFile = function (fileName, languageVersion, onError) {
         var fileContent;
@@ -21,9 +22,9 @@ var InMemoryHost = /** @class */ (function () {
         }
         else if (/^lib\..*?d\.ts$/.test(fileName)) {
             // resolving lib file
-            var libPath = nodePath.join(nodePath.dirname(require.resolve("typescript")), fileName);
+            var libPath = nodePath.join(nodePath.dirname(require.resolve("typescript", util_1.getTypeScriptResolveOptions())), fileName);
             logger_1.log("getSourceFile(fileName=\"" + fileName + "\") => resolved lib file " + libPath, "debug");
-            fileContent = ts.sys.readFile(libPath);
+            fileContent = this.ts.sys.readFile(libPath);
             if (fileContent != null)
                 this.fs.writeFile(fileName, fileContent, true);
         }
@@ -31,13 +32,13 @@ var InMemoryHost = /** @class */ (function () {
             // resolving a specific node module
             logger_1.log("getSourceFile(fileName=\"" + fileName + "\") => resolving typings", "debug");
             fileName = util_1.resolveTypings(fileName);
-            fileContent = ts.sys.readFile(fileName);
+            fileContent = this.ts.sys.readFile(fileName);
             if (fileContent != null)
                 this.fs.writeFile(fileName, fileContent, true);
         }
         if (fileContent != null) {
             logger_1.log("file content is not null", "debug");
-            return ts.createSourceFile(fileName, this.fs.readFile(fileName), languageVersion);
+            return this.ts.createSourceFile(fileName, this.fs.readFile(fileName), languageVersion);
         }
         else {
             logger_1.log("file content is null", "debug");
@@ -53,7 +54,7 @@ var InMemoryHost = /** @class */ (function () {
         this.fs.writeFile(path, content, true);
     };
     InMemoryHost.prototype.getCurrentDirectory = function () {
-        var ret = ts.sys.getCurrentDirectory();
+        var ret = this.ts.sys.getCurrentDirectory();
         logger_1.log("getCurrentDirectory() => " + ret, "debug");
         return ret;
     };
@@ -63,15 +64,15 @@ var InMemoryHost = /** @class */ (function () {
     };
     InMemoryHost.prototype.getCanonicalFileName = function (fileName) {
         logger_1.log("getCanonicalFileName(" + fileName + ")", "debug");
-        return ts.sys.useCaseSensitiveFileNames ? fileName : fileName.toLowerCase();
+        return this.ts.sys.useCaseSensitiveFileNames ? fileName : fileName.toLowerCase();
     };
     InMemoryHost.prototype.useCaseSensitiveFileNames = function () {
         logger_1.log("useCaseSensitiveFileNames()", "debug");
-        return ts.sys.useCaseSensitiveFileNames;
+        return this.ts.sys.useCaseSensitiveFileNames;
     };
     InMemoryHost.prototype.getNewLine = function () {
         logger_1.log("getNewLine()", "debug");
-        return ts.sys.newLine;
+        return this.ts.sys.newLine;
     };
     // public resolveModuleNames?(moduleNames: string[], containingFile: string): ts.ResolvedModule[] {
     // 	log(`resolveModuleNames(${moduleNames})`);

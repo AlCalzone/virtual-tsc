@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.VirtualFileSystem = void 0;
 var logger_1 = require("./logger");
 var VirtualFileSystem = /** @class */ (function () {
     function VirtualFileSystem() {
