@@ -88,7 +88,7 @@ ERROR: Type '1' is not assignable to type 'string'.
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### 0.6.0 (2020-06-09)
 * (AlCalzone) Expose `setTypeScriptResolveOptions` to set the options for resolving TypeScript and its lib files.
 
 ### 0.5.0 (2020-01-28)
