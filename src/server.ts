@@ -66,7 +66,9 @@ export class Server {
 	public provideAmbientDeclarations(declarations: { [filename: string]: string } = {}) {
 		// provide all ambient declaration files
 		for (const ambientFile of Object.keys(declarations)) {
-			if (!/\.d\.ts$/.test(ambientFile)) throw new Error("Declarations must be .d.ts-files");
+			if (!ambientFile.endsWith(".d.ts") && !ambientFile.endsWith("package.json")) {
+				throw new Error("Declarations must be .d.ts or package.json files");
+			}
 			this.fs.writeFile(ambientFile, declarations[ambientFile], true);
 		}
 	}

@@ -88,6 +88,9 @@ ERROR: Type '1' is not assignable to type 'string'.
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (AlCalzone) Allow `package.json` as ambient declarations, use "" as the current directory
+
 ### 0.6.0 (2020-06-09)
 * (AlCalzone) Expose `setTypeScriptResolveOptions` to set the options for resolving TypeScript and its lib files.
 

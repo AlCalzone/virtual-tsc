@@ -40,8 +40,9 @@ export class InMemoryServiceHost implements tsLanguageServiceHost {
 	}
 
 	public getCurrentDirectory(): string {
+		return "";
 		// return CWD;
-		return this.ts.sys.getCurrentDirectory();
+		// return this.ts.sys.getCurrentDirectory();
 	}
 
 	public getDefaultLibFileName(options: tsCompilerOptions): string {

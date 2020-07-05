@@ -10,7 +10,6 @@ import { Server } from "./server";
 
 const options = {
 	target: ts.ScriptTarget.ES2015,
-	lib: ["lib.es2015.d.ts"],
 };
 
 describe("compiler => ", function () {
