@@ -88,7 +88,7 @@ ERROR: Type '1' is not assignable to type 'string'.
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### 0.6.1 (2020-07-05)
 * (AlCalzone) Allow `package.json` as ambient declarations, use "" as the current directory
 
 ### 0.6.0 (2020-06-09)
