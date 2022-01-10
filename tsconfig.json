@@ -14,6 +14,7 @@
         "target": "es5",
         "lib": ["es2015"],
         "importsNotUsedAsValues": "error",
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "esModuleInterop": true
     }
 }

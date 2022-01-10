@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var ts = require("typescript");
+exports.InMemoryServiceHost = void 0;
 var logger_1 = require("./logger");
+var util_1 = require("./util");
 // https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#incremental-build-support-using-the-language-services
 /**
  * Implementation of LanguageServiceHost that works with in-memory-only source files
@@ -10,6 +11,7 @@ var InMemoryServiceHost = /** @class */ (function () {
     function InMemoryServiceHost(fs, options) {
         this.fs = fs;
         this.options = options;
+        this.ts = util_1.getTypeScript();
     }
     InMemoryServiceHost.prototype.getCompilationSettings = function () {
         return this.options;
@@ -25,12 +27,12 @@ var InMemoryServiceHost = /** @class */ (function () {
     InMemoryServiceHost.prototype.getScriptSnapshot = function (fileName) {
         if (!this.fs.fileExists(fileName))
             return undefined;
-        return ts.ScriptSnapshot.fromString(this.fs.readFile(fileName));
+        return this.ts.ScriptSnapshot.fromString(this.fs.readFile(fileName));
     };
     InMemoryServiceHost.prototype.getCurrentDirectory = function () {
-        // return CWD;
-        // return ts.sys.getCurrentDirectory();
         return "";
+        // return CWD;
+        // return this.ts.sys.getCurrentDirectory();
     };
     InMemoryServiceHost.prototype.getDefaultLibFileName = function (options) {
         options = options || this.options;
@@ -52,7 +54,7 @@ var InMemoryServiceHost = /** @class */ (function () {
             return this.fs.readFile(path);
         }
         else if (path.indexOf("node_modules") > -1) {
-            return ts.sys.readFile(path);
+            return this.ts.sys.readFile(path);
         }
     };
     InMemoryServiceHost.prototype.fileExists = function (path) {
@@ -62,14 +64,14 @@ var InMemoryServiceHost = /** @class */ (function () {
             ret = true;
         }
         else if (path.indexOf("node_modules") > -1) {
-            ret = ts.sys.fileExists(path);
+            ret = this.ts.sys.fileExists(path);
         }
         logger_1.log("host", "fileExists(" + path + ") => " + ret, "debug");
         return ret;
     };
     InMemoryServiceHost.prototype.readDirectory = function (path, extensions, exclude, include, depth) {
         logger_1.log("host", "readDirectory(\n\t" + path + ",\n\t" + (extensions ? JSON.stringify(extensions) : "null") + ",\n\t" + (exclude ? JSON.stringify(exclude) : "null") + ",\n\t" + (include ? JSON.stringify(include) : "null") + ",\n\t" + depth + ",\n", "debug");
-        return ts.sys.readDirectory(path, extensions, exclude, include, depth);
+        return this.ts.sys.readDirectory(path, extensions, exclude, include, depth);
     };
     InMemoryServiceHost.prototype.getDirectories = function (directoryName) {
         logger_1.log("host", "getDirectories(" + directoryName + ")", "debug");
@@ -78,7 +80,7 @@ var InMemoryServiceHost = /** @class */ (function () {
             return [];
         }
         try {
-            return ts.sys.getDirectories(directoryName);
+            return this.ts.sys.getDirectories(directoryName);
         }
         catch (e) {
             return [];
