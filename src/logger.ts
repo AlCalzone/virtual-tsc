@@ -1,6 +1,6 @@
 // tslint:disable-next-line:no-var-requires
-const colors = require("colors/safe");
-import * as debug from "debug";
+import debug from "debug";
+import colors from "picocolors"
 
 const defaultNamespace = "virtual-tsc";
 export type SubNamespaces = "server" | "host" | "util" | "vfs";
@@ -13,13 +13,13 @@ export function setCustomLogger(logger: LoggerFunction | false): void {
 	customLogger = logger;
 }
 
-colors.setTheme({
-	silly: "white",
-	debug: "white",
-	error: "red",
-	warn: "yellow",
-	info: "blue",
-});
+const formatters = {
+	info: (message: string) => colors.blue(message),
+	warn: (message: string) => colors.yellow(message),
+	debug: (message: string) => colors.white(message),
+	error: (message: string) => colors.red(message),
+	silly: (message: string) => colors.white(message),
+};
 
 export function log(message: string, severity: Severity): void;
 export function log(namespace: SubNamespaces, message: string, severity: Severity): void;
@@ -48,7 +48,7 @@ export function log(...args: any[]) {
 		if (severity !== "info") {
 			prefix = `[${severity.toUpperCase()}] `;
 		}
-		debug(defaultNamespace + namespace)(`${prefix}${colors[severity](message)}`);
+		debug(defaultNamespace + namespace)(`${prefix}${formatters[severity](message)}`);
 	}
 
 	(customLogger || defaultLogger)(message, severity);
