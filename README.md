@@ -87,6 +87,8 @@ ERROR: Type '1' is not assignable to type 'string'.
 	Placeholder for the next version (at the beginning of the line):
 	### __WORK IN PROGRESS__
 -->
+### 0.6.2 (2022-01-10)
+* (AlCalzone) Replaced corrupted `colors` dependency with `picocolors`
 
 ### 0.6.1 (2020-07-05)
 * (AlCalzone) Allow `package.json` as ambient declarations, use "" as the current directory
